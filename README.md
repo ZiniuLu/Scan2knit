@@ -1,43 +1,27 @@
-# libigl example project
+# Scan2knit project
 
-A blank project example showing how to use libigl and cmake. Feel free and
-encouraged to copy or fork this project as a way of starting a new personal
-project using libigl.
-
-## See the tutorial first
-
-Then build, run and understand the [libigl
-tutorial](http://libigl.github.io/libigl/tutorial/).
+An implementation of "Automatische Herstellung von 3D-gestrichten technischen Textilien" (Automated Production of 3D knitted Technical Textiles).
 
 ## Dependencies
 
-The only dependencies are stl, eigen, [libigl](http://libigl.github.io/libigl/) and
-the dependencies of the `igl::opengl::glfw::Viewer`.
+The only dependencies are [CGAL](https://doc.cgal.org/latest/Manual/windows.html) and [libigl](https://libigl.github.io/tutorial/) at first. It is recommended to use [vcpkg](https://github.com/microsoft/vcpkg) to install both dependencies.
 
-The cmake build system will attempt to find libigl according to environment variables (e.g., `LIBIGL`) and searching in common desitinations (e.g., `/usr/local/libigl/`). If you haven't installed libigl before, we recommend you to clone a copy of libigl right here:
+The cmake-gui build system will attempt to find cgal and libigl according to environment variables and searching in common desitinations.
 
-    cd libigl-example-project/
-    git clone https://github.com/libigl/libigl.git
-
-## Compile
-
-Compile this project using the standard cmake routine:
+Compile this project using the standard cmake-gui routine:
 
     mkdir build
     cd build
-    cmake ..
-    make
+    cmake-gui ..
 
-This should find and build the dependencies and create a `example_bin` binary.
+This should find and build the dependencies and create a `Scan2knit` binary.
 
 ## Run
 
 From within the `build` directory just issue:
 
-    ./example
+    ./Scan2knit xxx.off
 
-A glfw app should launch displaying a 3D cube.
+## Status
 
-
-
-# Scan2knit
+![image-20210326075506874](C:\Users\a\AppData\Roaming\Typora\typora-user-images\image-20210326075506874.png)
