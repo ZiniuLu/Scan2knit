@@ -24,4 +24,4 @@ From within the `build` directory just issue:
 
 ## Status
 
-![image-20210326075506874](C:\Users\a\AppData\Roaming\Typora\typora-user-images\image-20210326075506874.png)
+![hand-skel](.\image\hand-skel.png)
