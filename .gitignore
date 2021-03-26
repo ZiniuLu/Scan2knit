@@ -32,3 +32,9 @@
 *.swp
 
 build/*
+data/*
+
+*-skel.obj
+*-sm.obj
+
+data/obj/*
