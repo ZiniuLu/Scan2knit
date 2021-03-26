@@ -22,6 +22,6 @@ From within the `build` directory just issue:
 
     ./Scan2knit xxx.off
 
-## Status
+## Image
 
 ![hand-skel](./image/hand-skel.png)
