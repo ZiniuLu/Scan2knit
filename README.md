@@ -24,4 +24,4 @@ From within the `build` directory just issue:
 
 ## Status
 
-![hand-skel](.\image\hand-skel.png)
+![hand-skel](./image/hand-skel.png)
