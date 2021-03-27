@@ -4,7 +4,7 @@ An implementation of "Automatische Herstellung von 3D-gestrichten technischen Te
 
 ## Dependencies
 
-The only dependencies are [CGAL](https://doc.cgal.org/latest/Manual/windows.html) and [libigl](https://libigl.github.io/tutorial/) at first. It is recommended to use [vcpkg](https://github.com/microsoft/vcpkg) to install both dependencies.
+The only dependencies are [CGAL](https://doc.cgal.org/latest/Manual/windows.html) and [libigl](https://libigl.github.io/tutorial/). It is recommended to use [vcpkg](https://github.com/microsoft/vcpkg) to install both dependencies.
 
 The cmake-gui build system will attempt to find cgal and libigl according to environment variables and searching in common desitinations.
 
