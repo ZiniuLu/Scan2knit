@@ -16,11 +16,25 @@
 typedef boost::graph_traits<Triangle_mesh>::vertex_descriptor		vertex_descriptor;
 typedef CGAL::Mean_curvature_flow_skeletonization<Triangle_mesh>	Skeletonization;
 typedef Skeletonization::Skeleton									Skeleton;
-typedef Skeleton::vertex_descriptor								Skeleton_vertex;
-typedef Skeleton::edge_descriptor								Skeleton_edge;
 
 
 BEGIN_PROJECT_NAMESPACE
+
+template<class ValueType>
+struct Facet_with_id_pmap :public boost::put_get_helper<ValueType&, Facet_with_id_pmap<ValueType> >
+{
+	typedef face_descriptor key_type;
+	typedef ValueType value_type;
+	typedef value_type& reference;
+	typedef boost::lvalue_property_map_tag category;
+
+	Facet_with_id_pmap(std::vector<ValueType>& internal_vector) :internal_vector(internal_vector);
+
+	reference operator[](key_type key);
+
+private:
+	std::vector<ValueType>& internal_vector;
+};
 
 class CurveSkeleton
 {

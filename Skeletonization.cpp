@@ -9,8 +9,11 @@
 #include <igl/list_to_matrix.h>
 #include <igl/opengl/glfw/Viewer.h>
 
-#include "CurveSkeleton.h"
+#include "Skeletonization.h"
 
+
+typedef Skeleton::vertex_descriptor								Skeleton_vertex;
+typedef Skeleton::edge_descriptor								Skeleton_edge;
 
 
 BEGIN_PROJECT_NAMESPACE

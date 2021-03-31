@@ -2,7 +2,7 @@
  *     Author: Ziniu Lu (luziniuoskar@outlook.com)
  */
 
-#include "CurveSkeleton.h"
+#include "Skeletonization.h"
 #include "MeshFile.h"
 
 using namespace PROJECT_NAMESPACE;
@@ -21,13 +21,8 @@ int main(int argc, char *argv[])
         std::cout << "Can not open file: " << meshFile.getFileName() << " !" << std::endl;
         return EXIT_FAILURE;
     }
-        
 
     // 2. extract skeleton
-    //CurveSkeleton* p_skel_1 = NULL;
-    //p_skel_1 = new CurveSkeleton(meshFile);
-    //p_skel_1->extract_to_end(false);
-
     CurveSkeleton* p_skel = NULL;
     p_skel = new CurveSkeleton(meshFile);
     p_skel->extract_to_end(true);
