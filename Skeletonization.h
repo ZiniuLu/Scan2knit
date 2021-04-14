@@ -4,81 +4,194 @@
 
 #pragma once
 #include <string>
-#include <fstream>
-
-#include <Eigen/Dense>
+#include <list>
+#include <vector>
+#include <map>
+#include <set>
 
 #include "project.h"
 #include "MeshFile.h"
-
-#include <CGAL/extract_mean_curvature_flow_skeleton.h>
-
-typedef boost::graph_traits<Triangle_mesh>::vertex_descriptor		vertex_descriptor;
-typedef CGAL::Mean_curvature_flow_skeletonization<Triangle_mesh>	Skeletonization;
-typedef Skeletonization::Skeleton									Skeleton;
+#include "cgalHeader.h"
 
 
 BEGIN_PROJECT_NAMESPACE
 
-template<class ValueType>
-struct Facet_with_id_pmap :public boost::put_get_helper<ValueType&, Facet_with_id_pmap<ValueType> >
+enum node_type
 {
-	typedef face_descriptor key_type;
-	typedef ValueType value_type;
-	typedef value_type& reference;
-	typedef boost::lvalue_property_map_tag category;
-
-	Facet_with_id_pmap(std::vector<ValueType>& internal_vector) :internal_vector(internal_vector);
-
-	reference operator[](key_type key);
-
-private:
-	std::vector<ValueType>& internal_vector;
+	// skeleton structure, parent / children
+	NODE,			// =1 parent && =1 child
+	INTERSECTION,	// =1 parent && >1 children
+	ROOT,			// =0 parent && >0 children
+	TOP,			// =1 parent && =0 children
+	END				// ROOT || TOP
+};
+enum connection_type
+{
+	PARENTS,
+	BROTHERS,
+	CHILDREN
 };
 
-class CurveSkeleton
+class Node
+{
+protected:
+	std::pair<size_t, Point> node; // <node_number, point>
+
+public:
+	Node();
+	Node(const size_t nd_nr, const Point& p);
+	Node(const std::pair<size_t, Point>& nd);
+
+	void		 set(const size_t nd_nr, const Point& p);
+	void		 set(const std::pair<size_t, Point>& nd);
+	size_t		 node_number() const;	// node_number begins with 1 !!!
+	const Point& point() const;		// get point
+};
+
+class SkelNode : public Node
 {
 private:
-	std::string filePath;
-	Triangle_mesh tmesh;
-	bool isTriangleMesh = false;
-
-	Skeleton skeleton;
-	uint32_t numV_skel;
-	uint32_t numE_skel;
-	uint32_t numV_sm;
-	uint32_t numE_sm;
+	node_type type = NODE;
+	std::vector<Point> mapping_vertices;
 
 
 public:
-	CurveSkeleton(MeshFile& meshFile);
+	SkelNode();
+	SkelNode(const size_t nd_nr, const Point& p);
+	SkelNode(const std::pair<size_t, Point>& nd);
 
-	bool is_triangle_mesh();
-	void extract_to_end(bool output = true);
-	void extract_step_by_step(bool output = true);
+	void					  set_type(const node_type nd_type);
+	node_type				  get_type();
+	void					  set_mapping_vertices(const std::vector<Point>& v_map);
+	const std::vector<Point>& get_mapping_vertices() const;
+};
 
-	Triangle_mesh& get_triangle_mesh();
-	Skeleton& getSkeleton();
+class SkelEdge
+{
+private:
+	std::pair<size_t, size_t> edge;	// <source, target>
 
+public:
+	SkelEdge();
+	SkelEdge(const size_t& source, const size_t& target);
+	SkelEdge(const std::pair<size_t, size_t>& eg);
+
+	size_t source() const;
+	size_t target() const;
 	
-	//Eigen::MatrixXd& GetSkeletonPoints();
-	//Eigen::MatrixXi& GetSkeletonPointNrs();
+	// source & target: node_number, begin with 1 !!!
+};
+
+
+class Skel
+{
+private:
+	v_string  filePath;
+	Skeleton  skeleton;
+
+public:
+	Skel();
+	Skel(Mesh& mesh);
+	void			extract_to_end(Mesh& mesh);
+	//void			extract_step_by_step(Mesh& mesh);
+	const v_string& get_file_path() const;
+	const Skeleton& get_skeleton() const;
+};
+
+class SkelGraph
+{
+private:
+	v_string						filePath;
+	size_t							node_size = 0;
+	size_t							edge_size = 0;
+	size_t							root_node_number = 0;
+	std::set<size_t>				top_node_numbers;
+	std::set<size_t>				intersection_node_numbers;
+	std::vector<SkelNode>			skel_nodes;	// node number begins with 1 !!!
+	std::vector<SkelEdge>			skel_edges;	// only contain node numbers
+	std::list<std::vector<size_t>>  skel_segments;
+
+	size_t							contains_node(const Point& p);
+	size_t							analyse_skel_structure();	// currently don't consider ring-skel
+	size_t							analyse_tree_segments(
+										const std::set<size_t>& nd_type_end, 
+										const std::set<size_t>& nd_type_intersection);
+	void	 						set_node_type(size_t nd_nr, node_type nd_type);
+
+public:
+	SkelGraph();
+	SkelGraph(const Skel& skel);
+
+	void							set_skel_graph(const Skeleton& mcf_skel);
+	void							set_skel_nodes(const Skeleton& mcf_skel);
+	void							set_skel_edges(const Skeleton& mcf_skel);
+	void							set_skel_maps(const Skeleton& mcf_skel);
+	void							output_skel_to_files();
+	void							output_skel_file();
+	void							output_map_file();
+
+	std::vector<SkelNode>&			get_skel_nodes();
+	std::vector<SkelEdge>&			get_skel_edges();
+	const SkelNode&					get_skel_node(const size_t node_number) const;
+	std::vector<Point>&				get_skel_map(const size_t node_number) const;
+	size_t							get_root_node_number();
+	
+	double get_segment_distance(const std::vector<size_t>& skel_segment) const;
+	double get_edge_distance(const std::vector<SkelEdge>::iterator& it_eg) const;
+	double get_node_distance(const size_t nd_nr_1, const size_t nd_nr_2) const;
+	double get_node_distance(const SkelNode& nd1, const SkelNode& nd2) const;
+	// test
+	void print_skel_nodes();
+	void print_skel_edges();
+	void print_skel_graph();
+};
+
+class compairList
+{
+public:
+	bool operator()(std::pair<size_t, size_t> pair1, std::pair<size_t, size_t> pair2);
+};
+class equal_1
+{
+public:
+	bool operator()(size_t num);
+};
+class larger_than_1
+{
+public:
+	bool operator()(size_t num);
+};
+class larger_than_2
+{
+public:
+	bool operator()(size_t num);
+};
+
+/*
+class SkelMap	// skel_point -> mesh_points
+{
+private:
+	std::map<size_t, std::vector<size_t>> skel_map;	// <skel_node_nr, vector<surface_nodes_nr>>
+
+public:
+	SkelMap();
+	SkelMap(const Skeleton& mcf_skel, const Polyhedron& tmesh);
 
 private:
-	int containsPoint(
-		const Eigen::MatrixXd& V, 
-		const int vSize, 
-		const Point& p);
+	void push_back(size_t skel_nr, size_t mesh_nr);
+	void sort();
 
-	void output_skel_File(Eigen::MatrixXd& V, Eigen::MatrixXi E);
+};
+*/
 
-	void output_sm_File(Eigen::MatrixXd& V, Eigen::MatrixXi E);
-	
-	void display_once(
-		const Eigen::MatrixXd& V, 
-		const Eigen::MatrixXi& E, 
-		const float v_size, 
-		const float e_size);
+
+class SkelExtention
+{
+private:
+	std::map<size_t, size_t> skel_ext;	//<skel_nd_nr, tmesh_v_nr>
+public:
+	//FullSkeleton();
+	//FullSkeleton(const SkelGraph& skel_graph, const Polyhedron& tmesh);
 };
 
 END_PROJECT_NAMESPACE

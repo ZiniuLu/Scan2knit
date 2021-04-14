@@ -4,69 +4,126 @@
 
 #include <iostream>
 #include <fstream>
-#include <string>
-
-#include <igl/list_to_matrix.h>
-#include <igl/opengl/glfw/Viewer.h>
+#include <algorithm>
+#include <functional>
+#include <math.h>
+//using std::cout;
+//using std::endl;
 
 #include "Skeletonization.h"
-
-
-typedef Skeleton::vertex_descriptor								Skeleton_vertex;
-typedef Skeleton::edge_descriptor								Skeleton_edge;
+//using namespace std;
 
 
 BEGIN_PROJECT_NAMESPACE
 
-CurveSkeleton::CurveSkeleton(MeshFile& meshFile)
-{
-    this->filePath = meshFile.getFileDir() + meshFile.getFileName();
 
-    // build triangle mesh
-    meshFile.getInputStream() >> this->tmesh;
-    this->isTriangleMesh = CGAL::is_triangle_mesh(this->tmesh);
-    if (!this->isTriangleMesh)
-    {
-        std::cout << "Input geometry is not triangulated." << std::endl;
-        return;
-    }
-    // print geometry info
-    std::cout << "Number of vertices of the geometry: \t" << this->tmesh.num_vertices() << "\n";
-    std::cout << "Number of edge of the geometry: \t" << this->tmesh.num_edges() << "\n";
+// Node::
+Node::Node() { }
+
+Node::Node(const size_t nd_nr, const Point& p) { set(nd_nr, p); }
+
+Node::Node(const std::pair<size_t, Point>& nd) { set(nd); }
+
+void         Node::set(const size_t nd_nr, const Point& p) { this->node = std::make_pair(nd_nr, p); }
+
+void         Node::set(const std::pair<size_t, Point>& nd) { this->node = nd; }
+
+size_t       Node::node_number() const { return this->node.first; }
+
+const Point& Node::point() const { return this->node.second; }
+
+
+
+
+// SkelNode:: : public Node
+SkelNode::SkelNode() { }
+
+SkelNode::SkelNode(const size_t nd_nr, const Point& p) : Node(nd_nr, p) { }
+
+SkelNode::SkelNode(const std::pair<size_t, Point>& nd) : Node(nd) { }
+
+void                      SkelNode::set_type(const node_type nd_type) { this->type = nd_type; }
+
+node_type                 SkelNode::get_type() { return this->type; }
+
+void                      SkelNode::set_mapping_vertices(const std::vector<Point>& v_map)
+{
+    this->mapping_vertices = v_map;
 }
 
-void CurveSkeleton::extract_to_end(bool output)
+const std::vector<Point>& SkelNode::get_mapping_vertices() const
 {
-    //extract skeleton;
-    CGAL::extract_mean_curvature_flow_skeleton(this->tmesh, this->skeleton); // caculate object skeleton
+    return this->mapping_vertices;
+}
 
-    this->numV_skel = boost::num_vertices(this->skeleton);
-    this->numE_skel = boost::num_edges(this->skeleton);
 
-    std::cout << "Number of vertices of the skeleton: " << this->numV_skel << "\n";
-    std::cout << "Number of edges of the skeleton: " << this->numE_skel << "\n";
 
-    if (!output){ return; }
+
+// SkelEdge::
+SkelEdge::SkelEdge(){ }
+
+SkelEdge::SkelEdge(const size_t& source, const size_t& target) 
+{ 
+    this->edge = std::make_pair(source, target); 
+}
+
+SkelEdge::SkelEdge(const std::pair<size_t, size_t>& eg) { this->edge = eg; }
+
+size_t                 SkelEdge::source() const { return this->edge.first; }
+
+size_t                 SkelEdge::target() const { return this->edge.second; }
+
+
+
+
+// Skel::
+Skel::Skel() { }
+
+Skel::Skel(Mesh& mesh) { this->extract_to_end(mesh); }
+
+void            Skel::extract_to_end(Mesh& mesh)
+{
+    this->filePath = mesh.get_file_path();
+
+    // 1. extract skeleton;
+    std::cout << "\nextracting skeletons ... ";
+    auto& tmesh = mesh.get_tmesh();
+    CGAL::extract_mean_curvature_flow_skeleton(tmesh, this->skeleton); // caculate object skeleton
+    std::cout << "done." << std::endl;
+
+    // 3. caculate V & E numbers
+    size_t numV_skel = boost::num_vertices(this->skeleton);
+    size_t numE_skel = boost::num_edges(this->skeleton);
+    std::cout << "number of vertices: " << numV_skel << std::endl;
+    std::cout << "number of edges: " << numE_skel << std::endl;
+
+    std::cout << std::endl;
 
     // 3. Output all the edges of the skeleton.
-    Eigen::MatrixXd V1;
-    Eigen::MatrixXi E1;
-    output_skel_File(V1, E1);
+    //output_skel_File();
+    //Eigen::MatrixXd V1;
+    //Eigen::MatrixXi E1;
+    //output_skel_File(V1, E1);
 
     // 4. Output skeleton points and the corresponding surface points
-    const uint32_t numV_tmesh = boost::num_vertices(this->tmesh);
-    numV_sm = numV_tmesh + numV_skel;
-    numE_sm = numV_tmesh;
-    Eigen::MatrixXd V2;
-    Eigen::MatrixXi E2;
-    output_sm_File(V2, E2);
+    //output_map_File();
+    //size_t numV_tmesh = boost::num_vertices(tmesh);
+    //size_t numV_map = numV_tmesh + numV_skel;
+    //size_t numE_map = numV_tmesh;
+    //Eigen::MatrixXd V2;
+    //Eigen::MatrixXi E2;
+    //output_map_File(V2, E2);
 
     //display_once(V1, E1, 5, 3.0f);
 }
 
-// to do, can not display skeletons
-void CurveSkeleton::extract_step_by_step(bool output)
+// to do, cannot display skeletons
+/*
+void                   Skel::extract_step_by_step(Mesh& mesh)
 {
+    //load file
+    //load_file(meshFile);
+    auto tmesh = mesh.get_tmesh();
     //Skeleton skeleton;
     Skeletonization mcs(tmesh);
 
@@ -87,157 +144,13 @@ void CurveSkeleton::extract_step_by_step(bool output)
 
     this->numV_skel = boost::num_vertices(this->skeleton);
     this->numE_skel = boost::num_edges(this->skeleton);
-    std::cout << "Number of vertices of the skeleton: " << this->numV_skel << "\n";
-    std::cout << "Number of edges of the skeleton: " << this->numE_skel << "\n";
-
-    if (!output) { return; }
-
-    // 3. Output all the edges of the skeleton.
-    Eigen::MatrixXd V1;
-    Eigen::MatrixXi E1;
-    output_skel_File(V1, E1);
-
-    // 4. Output skeleton points and the corresponding surface points
-    const uint32_t numV_tmesh = boost::num_vertices(this->tmesh);
-    numV_sm = numV_tmesh + numV_skel;
-    numE_sm = numV_tmesh;
-    Eigen::MatrixXd V2;
-    Eigen::MatrixXi E2;
-    output_sm_File(V2, E2);
-}
-
-
-bool CurveSkeleton::is_triangle_mesh() { return this->isTriangleMesh; }
-Triangle_mesh& CurveSkeleton::get_triangle_mesh() { return this->tmesh; }
-Skeleton& CurveSkeleton::getSkeleton() { return this->skeleton; }
-
-
-int CurveSkeleton::containsPoint(const Eigen::MatrixXd& V, const int vSize, const Point& p)
-{
-    for (int i = 0; i < vSize; i++)
-    {
-        if (V(i, 0) == p.x() && V(i, 1) == p.y() && V(i, 2) == p.z())
-            return i;
-    }
-
-    return -1;
-}
-
-// Output all the edges of the skeleton.
-void CurveSkeleton::output_skel_File(Eigen::MatrixXd& V, Eigen::MatrixXi E)
-{
-    V = Eigen::MatrixX3d(this->numV_skel, 3);
-    E = Eigen::MatrixX2i(this->numE_skel, 2);
-    std::ofstream output(this->filePath + "-skel.obj");
-    int i = 0;
-    int j = 0;
-
-    for (const Skeleton_edge& e : CGAL::make_range(edges(this->skeleton)))
-    {
-        //std::cout << "e=" << e << std::endl;
-        const Point& s = skeleton[source(e, skeleton)].point;
-        const Point& t = skeleton[target(e, skeleton)].point;
-
-        int edgeIndex1;
-        int edgeIndex2;
-        int sIndex = containsPoint(V, numV_skel, s);
-        int tIndex = containsPoint(V, numV_skel, t);
-
-        if (sIndex < 0)
-        {
-            V(i, 0) = s.x();
-            V(i, 1) = s.y();
-            V(i, 2) = s.z();
-            output << "v " << s << "\n";
-            i++;
-        }
-        edgeIndex1 = (sIndex < 0) ? i : (sIndex + 1);
-
-        if (tIndex < 0)
-        {
-            V(i, 0) = t.x();
-            V(i, 1) = t.y();
-            V(i, 2) = t.z();
-            output << "v " << t << "\n";
-            i++;
-        }
-        edgeIndex2 = (tIndex < 0) ? i : (tIndex + 1);
-
-        E(j, 0) = edgeIndex1;
-        E(j, 1) = edgeIndex2;
-        j++;
-
-    }
-
-    for (int l = 0; l < numE_skel; l++)
-    {
-        output << "l " << E(l, 0) << " " << E(l, 1) << "\n";
-    }
-    output.close();
-}
-
-// Output skeleton points and the corresponding surface points
-void CurveSkeleton::output_sm_File(Eigen::MatrixXd& V, Eigen::MatrixXi E)
-{
-    V = Eigen::MatrixX3d(this->numV_sm, 3);
-    E = Eigen::MatrixX2i(this->numE_sm, 2);
-    std::ofstream output(this->filePath + "-sm.obj");
-
-
-    int i = 0;
-    int j = 0;
-    for (const Skeleton_vertex& v : CGAL::make_range(vertices(skeleton)))
-    {
-        Point p1 = skeleton[v].point;
-
-        int edgeIndex1;
-        int edgeIndex2;
-        int pointIndex1;
-        int pointIndex2;
-
-        pointIndex1 = containsPoint(V, this->numV_sm, skeleton[v].point);
-        if (pointIndex1 < 0)
-        {
-            V(i, 0) = p1.x();
-            V(i, 1) = p1.y();
-            V(i, 2) = p1.z();
-            output << "v " << p1 << "\n";
-            i++;
-        }
-        edgeIndex1 = (pointIndex1 < 0) ? i : (pointIndex1 + 1);
-
-        for (vertex_descriptor vd : skeleton[v].vertices)
-        {
-            Point& p2 = get(CGAL::vertex_point, this->tmesh, vd);
-            pointIndex2 = containsPoint(V, this->numV_sm, p2);
-            if (pointIndex2 < 0)
-            {
-                V(i, 0) = p2.x();
-                V(i, 1) = p2.y();
-                V(i, 2) = p2.z();
-                output << "v " << p2 << "\n";
-                i++;
-            }
-            edgeIndex2 = (pointIndex2 < 0) ? i : (pointIndex2 + 1);
-
-            E(j, 0) = edgeIndex1;
-            E(j, 1) = edgeIndex2;
-            j++;
-        }
-    }
-
-    //std::cout << "output -sm file: \n" << std::endl;
-    //std::cout << "numV = " << numV << "\ti = " << i << std::endl;
-    //std::cout << "numE = " << numE << "\tj = " << j << std::endl;
-
-    for (int l = 0; l < numE_sm; l++)
-    {
-        output << "l " << E(l, 0) << " " << E(l, 1) << "\n";
-    }
-    output.close();
-}
-
-void CurveSkeleton::display_once(const Eigen::MatrixXd& V, const Eigen::MatrixXi& E, const float v_size, const float e_size)
+    std::cout << "number of vertices of the skeleton: " << this->numV_skel << "\n";
+    std::cout << "number of edges of the skeleton: " << this->numE_skel << "\n";
+}*/
+/*
+void Skel::display_once(
+    const Eigen::MatrixXd& V, const Eigen::MatrixXi& E,
+    const float v_size,       const float e_size)
 {
     int numE = E.rows();
 
@@ -247,7 +160,7 @@ void CurveSkeleton::display_once(const Eigen::MatrixXd& V, const Eigen::MatrixXi
     viewer.data().point_size = v_size;
     viewer.data().line_width = e_size;
     viewer.data().add_points(V, Eigen::RowVector3d(0, 1, 0));
-    for (unsigned i = 0; i < numE; i++)
+    for (unsigned i = 0; i < numE; ++i)
     {
         int index1 = E(i, 0) - 1;
         int index2 = E(i, 1) - 1;
@@ -256,6 +169,558 @@ void CurveSkeleton::display_once(const Eigen::MatrixXd& V, const Eigen::MatrixXi
     viewer.core().camera_zoom = 0.005;
     viewer.launch();
 }
+*/
 
+const v_string& Skel::get_file_path() const { return this->filePath; }
+
+const Skeleton& Skel::get_skeleton() const { return this->skeleton; }
+
+
+
+
+// SkelGraph::
+SkelGraph::SkelGraph() { }
+
+SkelGraph::SkelGraph(const Skel& skel)
+{
+    // get file path
+    this->filePath = skel.get_file_path();
+
+    // build skel graph
+    const Skeleton& mcf_skel = skel.get_skeleton();
+    //const Polyhedron& tmesh = mesh.get_tmesh();
+    this->set_skel_graph(mcf_skel);
+}
+
+// create skel graph
+void                   SkelGraph::set_skel_graph(const Skeleton& mcf_skel)
+{
+    // point in skeleton -> called "node"
+    // point in mesh -> called "vertex"
+
+    // 1. get size of nodes and edges
+    this->node_size = mcf_skel.m_vertices.size();
+    this->edge_size = mcf_skel.m_edges.size();
+    
+    // 2. insert nodes from mcf_skel
+    set_skel_nodes(mcf_skel);
+
+    // 3. insert edges from mcf_skel
+    set_skel_edges(mcf_skel);
+
+    // 4. insert mapping lists of skeleton nodes and corresponding surface vertices
+    set_skel_maps(mcf_skel);
+
+    // 5. analyse skel structure
+    analyse_skel_structure();
+}
+
+void                   SkelGraph::set_skel_nodes(const Skeleton& mcf_skel)
+{
+    auto& my_nodes = mcf_skel.m_vertices;  // skeleton nodes with associated mesh vertices
+    
+    auto it_nd_begin = my_nodes.begin();
+    auto it_nd_end = my_nodes.end();
+    auto it_nd = it_nd_begin;
+   
+    for (; it_nd != it_nd_end; ++it_nd)
+    {
+        size_t my_node_nr = it_nd - it_nd_begin + 1; // in mcf_skel, node number starts from 0
+        const Point& my_point = it_nd->m_property.point;
+
+        this->skel_nodes.push_back(SkelNode(my_node_nr, my_point));
+        //std::cout << "V " << my_node_nr << " :\t"<< my_point << std::endl;
+    }
+}
+
+void                   SkelGraph::set_skel_edges(const Skeleton& mcf_skel)
+{
+    auto& my_edges = mcf_skel.m_edges;
+    
+    auto it_eg_begin = my_edges.begin();
+    auto it_eg_end = my_edges.end();
+    auto it_eg = it_eg_begin;
+    
+    for (; it_eg != it_eg_end; ++it_eg)
+    {
+        size_t my_source = it_eg->m_source + 1;
+        size_t my_target = it_eg->m_target + 1;
+        
+        this->skel_edges.push_back(SkelEdge(my_source, my_target));
+        //size_t my_edge_nr = std::distance(it_eg_begin, it_eg) + 1;
+        //std::cout << "E " << my_edge_nr << " :\t" << my_source << "\t " << my_target << std::endl;
+    }
+}
+
+void                   SkelGraph::set_skel_maps(const Skeleton& mcf_skel)
+{
+    auto& my_nodes = mcf_skel.m_vertices;
+    
+    auto it_nd_begin = my_nodes.begin();
+    auto it_nd_end = my_nodes.end();
+    auto it_nd = it_nd_begin;
+    
+    for (; it_nd != it_nd_end; ++it_nd)
+    {
+        size_t offset = it_nd - it_nd_begin;
+
+        Point p_skel = (*it_nd).m_property.point;   // current skel node
+        SkelNode& nd = this->skel_nodes[offset];     // current skel node
+        std::vector<Point> mapping_v_set;
+
+        if (p_skel == nd.point())
+        {
+            auto& vs = (*it_nd).m_property.vertices;
+
+            for (auto v : vs)
+            {
+                mapping_v_set.push_back((*v).point());
+            }
+        }
+
+        nd.set_mapping_vertices(mapping_v_set);
+    }
+
+}
+
+void                   SkelGraph::output_skel_to_files()
+{
+    output_skel_file();
+    output_map_file();
+}
+
+void                   SkelGraph::output_skel_file()
+{
+    std::string path = this->filePath[0] + this->filePath[1] + "-skel.obj";
+
+    std::cout << "\nsaving all skeleton points and skeleton curves to \""
+        << path << "\" ... ";
+
+    std::ofstream output(path);
+    for (const SkelNode& nd : this->skel_nodes)
+    {
+        output << "v " << nd.point() << "\n";
+    }
+    for (const SkelEdge& eg : this->skel_edges)
+    {
+        output << "l " << eg.source() << " " << eg.target() << "\n";
+    }
+    output.close();
+
+    std::cout << "done." << std::endl;
+}
+
+void                   SkelGraph::output_map_file()
+{
+    std::string path = this->filePath[0] + this->filePath[1] + "-map.obj";
+    std::cout << "saving the mapping list of skeleton points and surface points to \""
+        << path << "\" ... ";
+    std::ofstream output(path);
+    std::string eg_map;
+    for (const SkelNode& nd : this->skel_nodes)
+    {
+        output << "v " << nd.point() << "\n";
+    }
+
+    // output mapping vertices & edges
+    size_t mp_nr = this->node_size + 1;
+    for (const SkelNode& nd : this->skel_nodes)
+    {
+        size_t nd_nr = nd.node_number();
+        for (const Point& mp : nd.get_mapping_vertices())
+        {
+            output << "v " << mp << "\n";
+            eg_map += "l " + std::to_string(nd_nr) + " " + std::to_string(mp_nr) + "\n";
+            ++mp_nr;
+        }
+    }
+
+    output << eg_map;
+    output.close();
+
+    std::cout << "done." << std::endl;
+
+}
+
+std::vector<SkelNode>& SkelGraph::get_skel_nodes() { return this->skel_nodes; }
+
+std::vector<SkelEdge>& SkelGraph::get_skel_edges() { return this->skel_edges; }
+
+const SkelNode&        SkelGraph::get_skel_node(const size_t node_number) const
+{
+    return this->skel_nodes[node_number - 1];
+}
+
+size_t                 SkelGraph::get_root_node_number()
+{
+    if (this->root_node_number == 0)
+    {
+        analyse_skel_structure();
+    }
+    return this->root_node_number;
+}
+
+double                 SkelGraph::get_segment_distance(const std::vector<size_t>& skel_segment) const
+{
+    double distance = 0;
+
+    auto it_begin = skel_segment.begin();
+    auto it_end = skel_segment.end();
+    auto it = it_begin;
+
+    for (; it + 1 != it_end; ++it)
+    {
+        size_t s = *it;
+        size_t t = *(it + 1);
+        distance += get_node_distance(s, t);
+    }
+
+    return distance;
+}
+
+double                 SkelGraph::get_edge_distance(const std::vector<SkelEdge>::iterator& it_eg) const
+{
+    size_t nd_nr_1 = (*it_eg).source();
+    size_t nd_nr_2 = (*it_eg).target();
+    return get_node_distance(nd_nr_1, nd_nr_2);
+}
+
+double                 SkelGraph::get_node_distance(const size_t nd_nr_1, const size_t nd_nr_2) const
+{
+    const SkelNode& nd1 = get_skel_node(nd_nr_1);
+    const SkelNode& nd2 = get_skel_node(nd_nr_2);
+    return get_node_distance(nd1, nd2);
+}
+
+double                 SkelGraph::get_node_distance(const SkelNode& nd1, const SkelNode& nd2) const
+{
+    return sqrt(CGAL::squared_distance(nd1.point(), nd2.point()));
+}
+
+// private
+// if skel_nodes contains p, return node number, else return 0
+size_t                 SkelGraph::contains_node(const Point& p)
+{
+    auto it_nd_begin = skel_nodes.begin();
+    auto it_nd_end = skel_nodes.end();
+    auto it_nd = it_nd_begin;
+    for (;it_nd < it_nd_end; ++it_nd)
+    {
+        const Point& node = (*it_nd).point();
+
+        if (node.x() != p.x()) { continue; }
+        else if (node.y() != p.y()) { continue; }
+        else if (node.z() != p.z()) { continue; }
+        else { return it_nd - it_nd_begin + 1; }    // return node_number, begins with 1 !!!
+    }
+
+    return 0;
+}
+
+void                   SkelGraph::set_node_type(size_t nd_nr, node_type nd_type)
+{
+    auto it_nd = skel_nodes.begin();
+    std::advance(it_nd, nd_nr - 1);
+    (*it_nd).set_type(nd_type);
+}
+
+size_t                 SkelGraph::analyse_skel_structure()
+{
+    if (this->node_size == 0) { return 0; }
+
+    // 1. caculate the number of times each node appears in all edges
+    std::vector<int> node_frequency(this->node_size);
+
+    for (SkelEdge e : this->skel_edges)
+    {
+        size_t i_s = e.source() - 1;
+        size_t i_t = e.target() - 1;
+        node_frequency[i_s] += 1;
+        node_frequency[i_t] += 1;
+    }
+
+    // 2. set node type
+    // if node_frequency > 2 : intersection
+    // if node_frequency = 2 : normal node
+    // if node_frequency = 1 : end node -> root / top
+    std::set<size_t> node_type_end;
+    std::set<size_t> node_type_intersection;
+
+    auto it_begin = node_frequency.begin();
+    auto it_end = node_frequency.end();
+    auto it_ = it_begin;
+
+    auto it_equal_1 = std::find_if(it_begin, it_end, equal_1());                // = 1
+    auto it_larger_than_2 = std::find_if(it_begin, it_end, larger_than_2());    // > 2
+
+    while (it_ != it_end)
+    {
+        if (it_equal_1 < it_larger_than_2)
+        {
+            it_ = it_equal_1;
+            size_t node_nr = it_ - it_begin + 1;    // node_nr begins with 1
+            node_type_end.insert(node_nr);
+            skel_nodes[node_nr - 1].set_type(END);
+            ++it_;
+            it_equal_1 = std::find_if(it_, it_end, equal_1());
+        }
+        else if(it_larger_than_2 < it_equal_1)
+        {
+            it_ = it_larger_than_2; 
+            size_t node_nr = it_ - it_begin + 1;    // node_nr begins with 1
+            node_type_intersection.insert(node_nr);
+            skel_nodes[node_nr - 1].set_type(INTERSECTION);
+            ++it_;
+            it_larger_than_2 = std::find_if(it_, it_end, larger_than_2());
+        }
+        else
+        {
+            it_ = it_end;
+        }
+    }
+
+    //std::cout << "\nfound " << node_type_end.size() << " nodes with type END:" << std::endl;
+    //for (size_t n : node_type_end) { std::cout << n << " "; }
+    //std::cout << "\nfound " << node_type_intersection.size() << " nodes with type INTERSECTION:" << std::endl;
+    //for (size_t n : node_type_intersection) { std::cout << n << " "; }
+
+    // 3. analyse skel tree structures
+    return analyse_tree_segments(node_type_end, node_type_intersection);
+}
+
+size_t                 SkelGraph::analyse_tree_segments(
+                                  const std::set<size_t>& nd_type_end,
+                                  const std::set<size_t>& nd_type_intersection)
+{
+    if (this->node_size == 0 || this->edge_size == 0) { return 0; }
+
+    std::cout << "\nThe numbers of all end nodes of the skeleton: \n";
+    for (size_t nd : nd_type_end) { std::cout << nd << " "; }
+    
+    std::cout << "\nThe numbers of all branch nodes of the skeleton: \n";
+    for (size_t nd : nd_type_intersection) { std::cout << nd << " "; }
+
+    // 1. copy all sources & targets into a vector
+    std::vector<size_t> edges_s_t;
+    
+    auto it_eg_begin = this->skel_edges.begin();
+    auto it_eg_end = this->skel_edges.end();
+    auto it_eg = it_eg_begin;
+    
+    for (; it_eg != it_eg_end; ++it_eg)
+    {
+        edges_s_t.push_back((*it_eg).source());
+        edges_s_t.push_back((*it_eg).target());
+    }
+
+    // for step 5
+    std::map<size_t, size_t> end_2_its; // node_end to node_intersection
+    std::multimap<size_t, size_t> its_2_its;    // node_intersection to node_intersection
+
+    // 2. find all chains of node_end: from node_end to node_intersection
+    std::vector<size_t> segment_current;
+    size_t p_current;
+    std::set<size_t> intersection_founded;
+    int i = 1;
+    
+    for (size_t p_end : nd_type_end)
+    {
+        std::cout << "\n\nextracting node chains from node_end to node_intersection ...";
+        segment_current.push_back(p_end);   // the first node in a branch
+        p_current = p_end;
+        std::cout << "\nskel_segment " << i << ": \n[" << p_current << "] -> ";
+
+        while (true)
+        {
+            auto it_st_begin = edges_s_t.begin();
+            auto it_st_end = edges_s_t.end();
+            auto it_st = find(it_st_begin, it_st_end, p_current);
+
+            if (it_st == it_st_end)
+            {
+                std::cout << "no connection!" << std::endl;
+                --i;
+                break;
+            }
+
+            if ((it_st - it_st_begin) % 2 == 1) // if p_current is a target
+            {
+                p_current = *(it_st - 1);
+                segment_current.push_back(p_current);
+                edges_s_t.erase(it_st - 1, it_st + 1);     // remove current edge
+            }
+            else                                // if p_current is a source
+            {
+                p_current = *(it_st + 1);
+                segment_current.push_back(p_current);
+                edges_s_t.erase(it_st, it_st + 2);     // remove current edge
+            }
+
+            auto it_its = nd_type_intersection.find(p_current);
+            if (it_its != nd_type_intersection.end())   // p_current is a intersection node
+            {
+                // for step 3
+                intersection_founded.insert(*it_its);
+                std::cout << "[" << p_current << "]" << std::endl;
+                //for step 5
+                end_2_its.insert(std::make_pair(p_end, p_current));
+                break;   // built connection between node_end and node_intersection
+            }
+            std::cout << p_current << " -> ";
+        }
+
+        skel_segments.push_back(segment_current);
+        segment_current.clear();
+        ++i;
+    }
+
+    // 3. find all chains of node_intersection: from node_intersection to node_intersection
+    for (size_t p_its : intersection_founded)
+    {
+        std::cout << "\n\nextracting node chains from node_intersection to node_intersection ...";
+        segment_current.push_back(p_its);   // the first node in a branch
+        p_current = p_its;
+        std::cout << "\nskel_segment " << i << ": \n[" << p_current << "] -> ";
+
+        while (true)
+        {
+            auto it_st_begin = edges_s_t.begin();
+            auto it_st_end = edges_s_t.end();
+            auto it_st = find(it_st_begin, it_st_end, p_current);
+
+            if(it_st == it_st_end)
+            {
+                std::cout << "no connection!" << std::endl;
+                --i;
+                break;
+            }
+
+            if ((it_st - it_st_begin) % 2 == 1) // if p_current is a target
+            {
+                p_current = *(it_st - 1);
+                segment_current.push_back(p_current);
+                edges_s_t.erase(it_st - 1, it_st + 1);     // remove current edge
+            }
+            else                                // if p_current is a source
+            {
+                p_current = *(it_st + 1);
+                segment_current.push_back(p_current);
+                edges_s_t.erase(it_st, it_st + 2);     // remove current edge
+            }
+
+            auto it_its = nd_type_intersection.find(p_current);
+            if (it_its != nd_type_intersection.end())
+            {
+                intersection_founded.insert(*it_its);
+                std::cout << "[" << p_current << "]" << std::endl;
+                // for step 5
+                its_2_its.insert(std::make_pair(p_its, p_current));
+                break;   // built connection between node_end and node_intersection
+            }
+            std::cout << p_current << " -> ";
+        }
+
+        skel_segments.push_back(segment_current);
+        segment_current.clear();
+        ++i;
+    }
+
+    // 4. caculate node number in each segment
+    std::cout << "\ncaculate node number in each segment: " << std::endl;
+    std::vector<size_t> seg_nd_nr;   // segment node number
+    
+    auto it_seg_begin = this->skel_segments.begin();
+    auto it_seg_end = this->skel_segments.end();
+    auto it_seg = it_seg_begin;
+    
+    for (; it_seg != it_seg_end; ++it_seg)
+    {
+        size_t nr = (*it_seg).size();
+        seg_nd_nr.push_back(nr);
+        std::cout << nr << "\t";
+    }
+    std::cout << std::endl;
+    
+    auto it_seg_nd_nr_max = std::max_element(seg_nd_nr.begin(), seg_nd_nr.end());
+    auto it_seg_root = this->skel_segments.begin();
+    std::advance(it_seg_root, it_seg_nd_nr_max - seg_nd_nr.begin());
+    this->root_node_number = *(*it_seg_root).begin();
+    
+    // set node type: from END to ROOT / TOP
+    set_node_type(root_node_number, ROOT);
+    
+    for (size_t t : nd_type_end)
+    {
+        if (t != root_node_number)
+        {
+            set_node_type(t, TOP);
+            this->top_node_numbers.insert(t);
+        }
+    }
+    
+    for (size_t its : nd_type_intersection)
+    {
+        this->intersection_node_numbers.insert(its);
+    }
+
+    //5. merge different node segments
+    
+    // TODO
+    // currently no need to merge all segments
+
+
+    return this->root_node_number;
+}
+
+//test
+void                   SkelGraph::print_skel_nodes()
+{
+    std::cout << "\n\nsize of skeleton nodes: " << this->node_size << std::endl;
+    for (SkelNode n : this->skel_nodes)
+    {
+        std::cout << "V " << n.node_number() << ":\t"
+            << n.point().x() << "   \t" << n.point().y() << "   \t" << n.point().z() << "   \t"
+            << "Type: " << n.get_type() << std::endl;
+    }
+
+    std::cout << "(done)\n" << std::endl;
+}
+
+void                   SkelGraph::print_skel_edges()
+{
+    std::cout << "size of skeleton edges: " << this->edge_size << std::endl;
+    for (SkelEdge e : this->skel_edges)
+    {
+        std::cout << "E (" << e.source() << "\t, " << e.target() << ")" << std::endl;
+    }
+
+    std::cout << "(done)\n" << std::endl;
+
+}
+
+void                   SkelGraph::print_skel_graph()
+{
+    this->print_skel_nodes();
+    this->print_skel_edges();
+}
+
+
+
+
+//compairList::
+bool compairList::operator()(std::pair<size_t, size_t> pair1, std::pair<size_t, size_t> pair2)
+{
+    if (pair1.first == pair2.first) { return pair1.second < pair2.second; }
+    else { return pair1.first < pair2.first; }
+}
+
+//equal_1::
+bool equal_1::operator()(size_t num) { return num == 1; }
+
+//larger_than_1::
+bool larger_than_1::operator()(size_t num) { return num > 1; }
+
+//larger_than_2::
+bool larger_than_2::operator()(size_t num) { return num > 2; }
 
 END_PROJECT_NAMESPACE

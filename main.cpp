@@ -6,35 +6,41 @@
 #include "MeshFile.h"
 
 using namespace PROJECT_NAMESPACE;
-using namespace std;
-
+//using namespace std;
 
 int main(int argc, char *argv[])
 {
-    std::cout.flush();
+    //std::cout.flush();
     // 1. open file
     std::string filePath = "../data/hand.off";
-    MeshFile meshFile((argc > 1) ? argv[1] : filePath.c_str());
+    filePath = (argc > 1) ? argv[1] : filePath;
+    
+    MeshFile meshFile;
+    meshFile.open(filePath);
+    if (!meshFile.is_open()) { return EXIT_FAILURE; }
 
-    if (!meshFile.is_open())
-    {
-        std::cout << "Can not open file: " << meshFile.getFileName() << " !" << std::endl;
-        return EXIT_FAILURE;
+    // 2. get mesh
+    Mesh* p_mesh = NULL;
+    p_mesh = new Mesh(meshFile);
+    if (!p_mesh->is_triangle_mesh()) 
+    { 
+        delete p_mesh;
+        return EXIT_FAILURE; 
     }
 
-    // 2. extract skeleton
-    CurveSkeleton* p_skel = NULL;
-    p_skel = new CurveSkeleton(meshFile);
-    p_skel->extract_to_end(true);
+    // 3. extract skeleton
+    Skel* p_skel = NULL;
+    p_skel = new Skel(*p_mesh);
+    
+    // 4. set skel graph
+    SkelGraph* p_skel_graph = NULL;
+    p_skel_graph = new SkelGraph(*p_skel);
+    p_skel_graph->output_skel_to_files();
 
-
-
-
-
-
-
-
+    // 4. release pointers
+    delete p_skel_graph;
     delete p_skel;
+    delete p_mesh;
 
     return EXIT_SUCCESS;
 }
