@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     p_skel_graph = new SkelGraph(*p_skel);
     p_skel_graph->output_skel_to_files();
 
-    // 4. release pointers
+    // 5. release pointers
     delete p_skel_graph;
     delete p_skel;
     delete p_mesh;
