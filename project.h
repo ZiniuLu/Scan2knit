@@ -8,14 +8,12 @@
 # define PROJECT_NAMESPACE Scan2knit
 # define BEGIN_PROJECT_NAMESPACE namespace PROJECT_NAMESPACE {
 # define END_PROJECT_NAMESPACE }
-using namespace std;
+//using namespace std;
 
 BEGIN_PROJECT_NAMESPACE
 
 // basic log utility
-enum severity_level {
-    trace, debug, info, warning, error, fatal
-};
+enum severity_level {trace, debug, info, warning, error, fatal};
 extern const std::string severity_names[6];
 
 /*
@@ -37,4 +35,5 @@ extern const std::string severity_names[6];
   }                                                                         \
 }
 */
+
 END_PROJECT_NAMESPACE
