@@ -5,8 +5,8 @@
 #pragma once
 
 #include "project.h"
+#include "iglHeader.h"
 
-#include <Eigen/Dense>
 
 #define V_SIZE 5
 #define E_SIZE 3.0f
