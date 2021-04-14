@@ -4,37 +4,47 @@
 
 #pragma once
 
-#include <fstream>
-
 #include "project.h"
+#include "cgalHeader.h"
+#include <vector>
 
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Surface_mesh.h>
-
-typedef CGAL::Simple_cartesian<double>								Kernel;
-typedef Kernel::Point_3												Point;
-typedef CGAL::Surface_mesh<Point>									Triangle_mesh;
+typedef std::vector<std::string> v_string;
 
 BEGIN_PROJECT_NAMESPACE
 
 class MeshFile
 {
 private:
-	std::string fileDir;
-	std::string fileName;
-	std::string fileType;
-
-	std::ifstream input;
-	bool isOpen = false;
-	
+	std::vector<std::string>		 filePath; // fileDir + fileName + fileType
+	std::ifstream					 input;
+	bool							 isOpen = false;
 
 public:
-	MeshFile(const char* filePath);
+	MeshFile();
+	MeshFile(std::string filePath);
 
-	bool is_open();
-	std::string& getFileDir();
-	std::string& getFileName();
-	std::ifstream& getInputStream();
+	int								 open(const std::string filePath);
+	const bool						 is_open() const;
+	const std::vector<std::string>&  get_file_path() const;
+	std::ifstream&					 get_ifstream();
+};
+
+class Mesh
+{
+private:
+	v_string		  filePath;
+	bool			  is_tmesh = false;
+	Polyhedron		  tmesh;
+
+public:
+	Mesh();
+	Mesh(std::string filePath);
+	Mesh(MeshFile& meshFile);
+
+	void			  load_mesh_file(MeshFile& meshFile);
+	bool			  is_triangle_mesh();
+	const Polyhedron& get_tmesh() const;
+	const v_string&	  get_file_path() const;
 };
 
 END_PROJECT_NAMESPACE
