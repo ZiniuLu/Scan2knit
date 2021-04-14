@@ -7,11 +7,8 @@
 #include <algorithm>
 #include <functional>
 #include <math.h>
-//using std::cout;
-//using std::endl;
 
 #include "Skeletonization.h"
-//using namespace std;
 
 
 BEGIN_PROJECT_NAMESPACE
