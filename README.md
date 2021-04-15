@@ -6,7 +6,7 @@ The implementation of my master thesis "Automatische Herstellung von 3D-gestrich
 
 ## Status
 
-![hand with extensions](./image/20210415_hand with extension_1.png)
+![hand with extensions]("./image/20210415_hand with extension_1.png")
 
 ![Console output](./image/20210415_Output from VSConsole.png)
 
