@@ -102,14 +102,18 @@ class SkelGraph
 {
 private:
 	v_string						filePath;
+
 	size_t							node_size = 0;
 	size_t							edge_size = 0;
+
 	size_t							root_node_number = 0;
-	std::set<size_t>				top_node_numbers;
-	std::set<size_t>				intersection_node_numbers;
+	std::vector<size_t>				top_node_numbers;
+	std::vector<size_t>				intersection_node_numbers;
+	std::vector<Point>				skel_extension;
+
 	std::vector<SkelNode>			skel_nodes;	// node number begins with 1 !!!
 	std::vector<SkelEdge>			skel_edges;	// only contain node numbers
-	std::list<std::vector<size_t>>  skel_segments;
+	std::list<std::vector<size_t>>  skel_segments; // root/top/intersection -> intersection
 
 	size_t							contains_node(const Point& p);
 	size_t							analyse_skel_structure();	// currently don't consider ring-skel
@@ -126,9 +130,13 @@ public:
 	void							set_skel_nodes(const Skeleton& mcf_skel);
 	void							set_skel_edges(const Skeleton& mcf_skel);
 	void							set_skel_maps(const Skeleton& mcf_skel);
+	void							set_skel_extension();
 	void							output_skel_to_files();
 	void							output_skel_file();
 	void							output_map_file();
+	//void							output_top_map_file();	// mapping with root/top nodes
+	//void							output_intersection_map_file();
+	void							output_extension_file();
 
 	std::vector<SkelNode>&			get_skel_nodes();
 	std::vector<SkelEdge>&			get_skel_edges();

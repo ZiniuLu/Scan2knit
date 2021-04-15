@@ -210,6 +210,9 @@ void                   SkelGraph::set_skel_graph(const Skeleton& mcf_skel)
 
     // 5. analyse skel structure
     analyse_skel_structure();
+
+    // 6. find nearst surface point of the extension cord of root/top node
+    set_skel_extension();
 }
 
 void                   SkelGraph::set_skel_nodes(const Skeleton& mcf_skel)
@@ -280,10 +283,71 @@ void                   SkelGraph::set_skel_maps(const Skeleton& mcf_skel)
 
 }
 
+void                   SkelGraph::set_skel_extension()
+{
+    std::vector<size_t> nr_curr;    // node numbers: root & top
+    std::vector<size_t> nr_next;    // numbers of next nodes
+    nr_curr.push_back(this->root_node_number);
+    std::copy(this->top_node_numbers.begin(), this->top_node_numbers.end(), std::back_inserter(nr_curr));
+ 
+    auto it_seg_begin = this->skel_segments.begin();
+    auto it_seg_end = this->skel_segments.end();
+    auto it_seg = it_seg_begin;
+
+    for (size_t nd_nr : nr_curr)
+    {
+        for (it_seg = it_seg_begin; it_seg != it_seg_end; ++it_seg)
+        {
+            if ((*it_seg)[0] == nd_nr)
+            {
+                //++it_seg;
+                nr_next.push_back((*it_seg)[1]);
+                break;
+            }
+        }
+    }
+
+    // find extension cord
+    for (size_t i = 0; i < nr_curr.size(); ++i)
+    {
+        const SkelNode& nd_curr = this->skel_nodes[nr_curr[i]-1]; // root/top skel node
+        const SkelNode& nd_next = this->skel_nodes[nr_next[i]-1]; // skel node next to root/top
+        const Point& p1 = nd_next.point();
+        const Point& p2 = nd_curr.point();
+
+        const auto& v_maps = nd_curr.get_mapping_vertices();
+
+        auto it_v_begin = v_maps.begin();
+        auto it_v_end = v_maps.end();
+        auto it_v = it_v_begin;
+        auto it_v_max = it_v_begin;
+        double cosine_max = 0;
+
+        for (; it_v != it_v_end; ++it_v)
+        {
+            const Point& p3 = (*it_v);
+            double dot_product = (p2.x() - p1.x()) * (p3.x() - p2.x()) 
+                               + (p2.y() - p1.y()) * (p3.y() - p2.y()) 
+                               + (p2.z() - p1.z()) * (p3.z() - p2.z());
+            if (dot_product < 0) { continue; }  // ignore obtuse angle
+            
+            double cosine = dot_product / std::sqrt(CGAL::squared_distance(p2, p3));    // ignore length of <p1,p2>
+            if (cosine_max < cosine)
+            {
+                cosine_max = cosine;
+                it_v_max = it_v;
+            }
+        }
+
+        this->skel_extension.push_back(*it_v_max);
+    }
+}
+
 void                   SkelGraph::output_skel_to_files()
 {
     output_skel_file();
     output_map_file();
+    output_extension_file();
 }
 
 void                   SkelGraph::output_skel_file()
@@ -337,6 +401,57 @@ void                   SkelGraph::output_map_file()
 
     std::cout << "done." << std::endl;
 
+}
+
+void                   SkelGraph::output_extension_file()
+{
+    std::string path = this->filePath[0] + this->filePath[1] + "-extension.obj";
+
+    std::cout << "saving all skeleton extension points to \""
+        << path << "\" ... ";
+
+    std::ofstream output(path);
+
+    
+    std::vector<size_t> nr_curr;    // node numbers: root & top
+    std::vector<size_t> nr_next;    // node numbers: next node
+    nr_curr.push_back(this->root_node_number);
+    std::copy(this->top_node_numbers.begin(), this->top_node_numbers.end(), std::back_inserter(nr_curr));
+
+    auto it_seg_begin = this->skel_segments.begin();
+    auto it_seg_end = this->skel_segments.end();
+    auto it_seg = it_seg_begin;
+
+    for (size_t nd_nr : nr_curr)
+    {
+        for (it_seg = it_seg_begin; it_seg != it_seg_end; ++it_seg)
+        {
+            if ((*it_seg)[0] == nd_nr)
+            {
+                nr_next.push_back((*it_seg)[1]);
+                break;
+            }
+        }
+    }
+
+    // output vertices
+    size_t max = this->skel_extension.size();
+    for (size_t i = 0; i < max; ++i)
+    {
+        output << "v " << this->skel_nodes[nr_curr[i] - 1].point() << "\n";
+        output << "v " << this->skel_nodes[nr_next[i] - 1].point() << "\n";
+        output << "v " << this->skel_extension[i] << "\n";
+    }
+
+    for (size_t i = 0; i < max; ++i)
+    {
+        output << "l " << 3 * i + 1 << " " << 3 * i + 2 << "\n";
+        output << "l " << 3 * i + 1 << " " << 3 * i + 3 << "\n";
+    }
+
+    output.close();
+
+    std::cout << "done." << std::endl;
 }
 
 std::vector<SkelNode>& SkelGraph::get_skel_nodes() { return this->skel_nodes; }
@@ -520,9 +635,9 @@ size_t                 SkelGraph::analyse_tree_segments(
     std::set<size_t> intersection_founded;
     int i = 1;
     
+    std::cout << "\n\nextracting node chains from node_end to node_intersection ...";
     for (size_t p_end : nd_type_end)
     {
-        std::cout << "\n\nextracting node chains from node_end to node_intersection ...";
         segment_current.push_back(p_end);   // the first node in a branch
         p_current = p_end;
         std::cout << "\nskel_segment " << i << ": \n[" << p_current << "] -> ";
@@ -536,6 +651,7 @@ size_t                 SkelGraph::analyse_tree_segments(
             if (it_st == it_st_end)
             {
                 std::cout << "no connection!" << std::endl;
+                segment_current.clear();
                 --i;
                 break;
             }
@@ -561,20 +677,23 @@ size_t                 SkelGraph::analyse_tree_segments(
                 std::cout << "[" << p_current << "]" << std::endl;
                 //for step 5
                 end_2_its.insert(std::make_pair(p_end, p_current));
-                break;   // built connection between node_end and node_intersection
+                break;   // build connection between node_end and node_intersection
             }
             std::cout << p_current << " -> ";
         }
 
-        skel_segments.push_back(segment_current);
-        segment_current.clear();
+        if (segment_current.size() > 0)
+        {
+            this->skel_segments.push_back(segment_current);
+            segment_current.clear();
+        }
         ++i;
     }
 
     // 3. find all chains of node_intersection: from node_intersection to node_intersection
+    std::cout << "\n\nextracting node chains from node_intersection to node_intersection ...";
     for (size_t p_its : intersection_founded)
     {
-        std::cout << "\n\nextracting node chains from node_intersection to node_intersection ...";
         segment_current.push_back(p_its);   // the first node in a branch
         p_current = p_its;
         std::cout << "\nskel_segment " << i << ": \n[" << p_current << "] -> ";
@@ -588,6 +707,7 @@ size_t                 SkelGraph::analyse_tree_segments(
             if(it_st == it_st_end)
             {
                 std::cout << "no connection!" << std::endl;
+                segment_current.clear();
                 --i;
                 break;
             }
@@ -617,13 +737,16 @@ size_t                 SkelGraph::analyse_tree_segments(
             std::cout << p_current << " -> ";
         }
 
-        skel_segments.push_back(segment_current);
-        segment_current.clear();
+        if (segment_current.size() > 0)
+        {
+            skel_segments.push_back(segment_current);
+            segment_current.clear();
+        }
         ++i;
     }
 
-    // 4. caculate node number in each segment
-    std::cout << "\ncaculate node number in each segment: " << std::endl;
+    // 4. caculate node amount in each segment
+    std::cout << "\ncaculate node amount in each segment: " << std::endl;
     std::vector<size_t> seg_nd_nr;   // segment node number
     
     auto it_seg_begin = this->skel_segments.begin();
@@ -651,13 +774,13 @@ size_t                 SkelGraph::analyse_tree_segments(
         if (t != root_node_number)
         {
             set_node_type(t, TOP);
-            this->top_node_numbers.insert(t);
+            this->top_node_numbers.push_back(t);
         }
     }
     
     for (size_t its : nd_type_intersection)
     {
-        this->intersection_node_numbers.insert(its);
+        this->intersection_node_numbers.push_back(its);
     }
 
     //5. merge different node segments
