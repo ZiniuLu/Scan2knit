@@ -91,9 +91,10 @@ private:
 
 public:
 	Skel();
-	Skel(Mesh& mesh);
-	void			extract_to_end(Mesh& mesh);
-	//void			extract_step_by_step(Mesh& mesh);
+	Skel(const Mesh& mesh);
+	Skel(const Skeleton& skeleton);
+	void			extract_to_end(const Mesh& mesh);
+	//void			extract_step_by_step(const Mesh& mesh);
 	const v_string& get_file_path() const;
 	const Skeleton& get_skeleton() const;
 };
@@ -138,8 +139,8 @@ public:
 	//void							output_intersection_map_file();
 	void							output_extension_file();
 
-	std::vector<SkelNode>&			get_skel_nodes();
-	std::vector<SkelEdge>&			get_skel_edges();
+	const std::vector<SkelNode>&	get_skel_nodes() const;
+	const std::vector<SkelEdge>&	get_skel_edges() const;
 	const SkelNode&					get_skel_node(const size_t node_number) const;
 	std::vector<Point>&				get_skel_map(const size_t node_number) const;
 	size_t							get_root_node_number();

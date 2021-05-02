@@ -16,9 +16,7 @@ BEGIN_PROJECT_NAMESPACE
 
 // Node::
 Node::Node() { }
-
 Node::Node(const size_t nd_nr, const Point& p) { set(nd_nr, p); }
-
 Node::Node(const std::pair<size_t, Point>& nd) { set(nd); }
 
 void         Node::set(const size_t nd_nr, const Point& p) { this->node = std::make_pair(nd_nr, p); }
@@ -34,9 +32,7 @@ const Point& Node::point() const { return this->node.second; }
 
 // SkelNode:: : public Node
 SkelNode::SkelNode() { }
-
 SkelNode::SkelNode(const size_t nd_nr, const Point& p) : Node(nd_nr, p) { }
-
 SkelNode::SkelNode(const std::pair<size_t, Point>& nd) : Node(nd) { }
 
 void                      SkelNode::set_type(const node_type nd_type) { this->type = nd_type; }
@@ -58,16 +54,13 @@ const std::vector<Point>& SkelNode::get_mapping_vertices() const
 
 // SkelEdge::
 SkelEdge::SkelEdge(){ }
-
 SkelEdge::SkelEdge(const size_t& source, const size_t& target) 
 { 
     this->edge = std::make_pair(source, target); 
 }
-
 SkelEdge::SkelEdge(const std::pair<size_t, size_t>& eg) { this->edge = eg; }
 
 size_t                 SkelEdge::source() const { return this->edge.first; }
-
 size_t                 SkelEdge::target() const { return this->edge.second; }
 
 
@@ -75,10 +68,14 @@ size_t                 SkelEdge::target() const { return this->edge.second; }
 
 // Skel::
 Skel::Skel() { }
+Skel::Skel(const Mesh& mesh) { this->extract_to_end(mesh); }
+Skel::Skel(const Skeleton& skeleton)
+{
+    this->filePath.push_back("../data/NoName.off");
+    this->skeleton = skeleton;
+}
 
-Skel::Skel(Mesh& mesh) { this->extract_to_end(mesh); }
-
-void            Skel::extract_to_end(Mesh& mesh)
+void            Skel::extract_to_end(const Mesh& mesh)
 {
     this->filePath = mesh.get_file_path();
 
@@ -116,7 +113,7 @@ void            Skel::extract_to_end(Mesh& mesh)
 
 // to do, cannot display skeletons
 /*
-void                   Skel::extract_step_by_step(Mesh& mesh)
+void                   Skel::extract_step_by_step(const Mesh& mesh)
 {
     //load file
     //load_file(meshFile);
@@ -144,29 +141,6 @@ void                   Skel::extract_step_by_step(Mesh& mesh)
     std::cout << "number of vertices of the skeleton: " << this->numV_skel << "\n";
     std::cout << "number of edges of the skeleton: " << this->numE_skel << "\n";
 }*/
-/*
-void Skel::display_once(
-    const Eigen::MatrixXd& V, const Eigen::MatrixXi& E,
-    const float v_size,       const float e_size)
-{
-    int numE = E.rows();
-
-    // Plot the mesh
-    igl::opengl::glfw::Viewer viewer;
-
-    viewer.data().point_size = v_size;
-    viewer.data().line_width = e_size;
-    viewer.data().add_points(V, Eigen::RowVector3d(0, 1, 0));
-    for (unsigned i = 0; i < numE; ++i)
-    {
-        int index1 = E(i, 0) - 1;
-        int index2 = E(i, 1) - 1;
-        viewer.data().add_edges(V.row(index1), V.row(index2), Eigen::RowVector3d(1, 0, 0));
-    }
-    viewer.core().camera_zoom = 0.005;
-    viewer.launch();
-}
-*/
 
 const v_string& Skel::get_file_path() const { return this->filePath; }
 
@@ -454,9 +428,9 @@ void                   SkelGraph::output_extension_file()
     std::cout << "done." << std::endl;
 }
 
-std::vector<SkelNode>& SkelGraph::get_skel_nodes() { return this->skel_nodes; }
+const std::vector<SkelNode>& SkelGraph::get_skel_nodes() const { return this->skel_nodes; }
 
-std::vector<SkelEdge>& SkelGraph::get_skel_edges() { return this->skel_edges; }
+const std::vector<SkelEdge>& SkelGraph::get_skel_edges() const { return this->skel_edges; }
 
 const SkelNode&        SkelGraph::get_skel_node(const size_t node_number) const
 {
