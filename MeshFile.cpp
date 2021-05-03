@@ -16,7 +16,6 @@ BEGIN_PROJECT_NAMESPACE
 
 // MeshFile::
 MeshFile::MeshFile(){ }
-
 MeshFile::MeshFile(std::string filePath) { this->open(filePath); }
 
 int				MeshFile::open(const std::string path)
@@ -57,7 +56,6 @@ std::ifstream&	MeshFile::get_ifstream() { return this->input; }
 
 // Mesh::
 Mesh::Mesh(){ }
-
 Mesh::Mesh(std::string filePath)
 {
 	MeshFile meshFile;
@@ -65,7 +63,6 @@ Mesh::Mesh(std::string filePath)
 	this->load_mesh_file(meshFile);
 	this->filePath = meshFile.get_file_path();
 }
-
 Mesh::Mesh(MeshFile& meshFile)
 {
 	this->load_mesh_file(meshFile);	

@@ -13,5 +13,4 @@ const std::string severity_names[6] = {
     "[ error ]",
     "[ fatal ]"
 };
-
 END_PROJECT_NAMESPACE

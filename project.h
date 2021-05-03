@@ -8,7 +8,6 @@
 # define PROJECT_NAMESPACE Scan2knit
 # define BEGIN_PROJECT_NAMESPACE namespace PROJECT_NAMESPACE {
 # define END_PROJECT_NAMESPACE }
-//using namespace std;
 
 BEGIN_PROJECT_NAMESPACE
 
