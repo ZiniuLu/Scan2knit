@@ -11,7 +11,7 @@
 
 #include "project.h"
 #include "MeshFile.h"
-#include "cgalHeader.h"
+#include "cgalHeader.hpp"
 
 
 BEGIN_PROJECT_NAMESPACE
