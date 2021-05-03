@@ -9,10 +9,10 @@
 
 BEGIN_PROJECT_NAMESPACE
 
-class Segment
+class Segmentation
 {
 public:
-	int segment(Skeleton& skeleton, Polyhedron& tmesh);
+	Segmentation(Skeleton& skeleton, Polyhedron& tmesh);
 };
 
 END_PROJECT_NAMESPACE
@@ -22,15 +22,18 @@ END_PROJECT_NAMESPACE
 template<class ValueType>
 struct Facet_with_id_pmap : public boost::put_get_helper<ValueType&, Facet_with_id_pmap<ValueType> >
 {
-    typedef face_descriptor key_type;
-    typedef ValueType value_type;
-    typedef value_type& reference;
-    typedef boost::lvalue_property_map_tag category;
+    typedef face_descriptor                 key_type;
+    typedef ValueType                       value_type;
+    typedef value_type&                     reference;
+    typedef boost::lvalue_property_map_tag  category;
+
     Facet_with_id_pmap(std::vector<ValueType>& internal_vector) : internal_vector(internal_vector) { }
+    
     reference operator[](key_type key) const
     {
         return internal_vector[key->id()];
     }
+
 private:
     std::vector<ValueType>& internal_vector;
 };
