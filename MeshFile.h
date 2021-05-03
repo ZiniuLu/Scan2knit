@@ -5,7 +5,7 @@
 #pragma once
 
 #include "project.h"
-#include "cgalHeader.h"
+#include "cgalHeader.hpp"
 #include <vector>
 
 typedef std::vector<std::string> v_string;
