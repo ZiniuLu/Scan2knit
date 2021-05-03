@@ -21,7 +21,8 @@ find_package(LIBIGL REQUIRED QUIET)
 # Add your project files
 file(GLOB SRCFILES *.cpp)
 file(GLOB HEADFILES *.h)
+file(GLOB TPLTFILES *.hpp)
 
 # add_library(myLib SHARED file.cpp)
-add_executable(${PROJECT_NAME} ${SRCFILES} ${HEADFILES})
+add_executable(${PROJECT_NAME} ${SRCFILES} ${HEADFILES} ${TPLTFILES})
 target_link_libraries(${PROJECT_NAME} igl::core igl::opengl_glfw)
