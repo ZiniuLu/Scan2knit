@@ -21,7 +21,7 @@ private:
 
 public:
 	MeshFile();
-	MeshFile(std::string filePath);
+	MeshFile(const std::string filePath);
 
 	int								 open(const std::string filePath);
 	const bool						 is_open() const;
@@ -32,19 +32,22 @@ public:
 class Mesh
 {
 private:
-	v_string		  filePath;
-	bool			  is_tmesh = false;
-	Polyhedron		  tmesh;
+	v_string	  filePath;	// path, filename, suffix
+	bool		  is_tmesh = false;
+	Triangle_mesh tmesh;
+
+	int			  load_obj(MeshFile& meshFile);
+	int			  load_off(MeshFile& meshFile);
 
 public:
 	Mesh();
-	Mesh(std::string filePath);
+	Mesh(const std::string filePath);
 	Mesh(MeshFile& meshFile);
 
-	void			  load_mesh_file(MeshFile& meshFile);
-	bool			  is_triangle_mesh();
-	const Polyhedron& get_tmesh() const;
-	const v_string&	  get_file_path() const;
+	void				 load_mesh_file(MeshFile& meshFile);
+	bool				 is_triangle_mesh();
+	const Triangle_mesh& get_tmesh() const;
+	const v_string&	     get_file_path() const;
 };
 
 END_PROJECT_NAMESPACE
