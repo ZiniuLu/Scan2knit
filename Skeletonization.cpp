@@ -20,7 +20,6 @@ Node::Node(const size_t nd_nr, const Point& p) { set(nd_nr, p); }
 Node::Node(const std::pair<size_t, Point>& nd) { set(nd); }
 
 void         Node::set(const size_t nd_nr, const Point& p) { this->node = std::make_pair(nd_nr, p); }
-
 void         Node::set(const std::pair<size_t, Point>& nd) { this->node = nd; }
 
 size_t       Node::node_number() const { return this->node.first; }
@@ -36,14 +35,12 @@ SkelNode::SkelNode(const size_t nd_nr, const Point& p) : Node(nd_nr, p) { }
 SkelNode::SkelNode(const std::pair<size_t, Point>& nd) : Node(nd) { }
 
 void                      SkelNode::set_type(const node_type nd_type) { this->type = nd_type; }
-
 node_type                 SkelNode::get_type() { return this->type; }
 
 void                      SkelNode::set_mapping_vertices(const std::vector<Point>& v_map)
 {
     this->mapping_vertices = v_map;
 }
-
 const std::vector<Point>& SkelNode::get_mapping_vertices() const
 {
     return this->mapping_vertices;
@@ -151,7 +148,6 @@ const Skeleton& Skel::get_skeleton() const { return this->skeleton; }
 
 // SkelGraph::
 SkelGraph::SkelGraph() { }
-
 SkelGraph::SkelGraph(const Skel& skel)
 {
     // get file path
@@ -159,7 +155,7 @@ SkelGraph::SkelGraph(const Skel& skel)
 
     // build skel graph
     const Skeleton& mcf_skel = skel.get_skeleton();
-    //const Polyhedron& tmesh = mesh.get_tmesh();
+    //const Triangle_mesh& tmesh = mesh.get_tmesh();
     this->set_skel_graph(mcf_skel);
 }
 
@@ -188,7 +184,6 @@ void                   SkelGraph::set_skel_graph(const Skeleton& mcf_skel)
     // 6. find nearst surface point of the extension cord of root/top node
     set_skel_extension();
 }
-
 void                   SkelGraph::set_skel_nodes(const Skeleton& mcf_skel)
 {
     auto& my_nodes = mcf_skel.m_vertices;  // skeleton nodes with associated mesh vertices
@@ -206,7 +201,6 @@ void                   SkelGraph::set_skel_nodes(const Skeleton& mcf_skel)
         //std::cout << "V " << my_node_nr << " :\t"<< my_point << std::endl;
     }
 }
-
 void                   SkelGraph::set_skel_edges(const Skeleton& mcf_skel)
 {
     auto& my_edges = mcf_skel.m_edges;
@@ -225,7 +219,6 @@ void                   SkelGraph::set_skel_edges(const Skeleton& mcf_skel)
         //std::cout << "E " << my_edge_nr << " :\t" << my_source << "\t " << my_target << std::endl;
     }
 }
-
 void                   SkelGraph::set_skel_maps(const Skeleton& mcf_skel)
 {
     auto& my_nodes = mcf_skel.m_vertices;
@@ -238,17 +231,17 @@ void                   SkelGraph::set_skel_maps(const Skeleton& mcf_skel)
     {
         size_t offset = it_nd - it_nd_begin;
 
-        Point p_skel = (*it_nd).m_property.point;   // current skel node
+        const Point& p_skel = it_nd->m_property.point;   // current skel node
         SkelNode& nd = this->skel_nodes[offset];     // current skel node
         std::vector<Point> mapping_v_set;
 
         if (p_skel == nd.point())
         {
-            auto& vs = (*it_nd).m_property.vertices;
+            const auto& vs = it_nd->m_property.vertices;
 
-            for (auto v : vs)
+            for (const auto& v : vs)
             {
-                mapping_v_set.push_back((*v).point());
+                mapping_v_set.push_back(mcf_skel[v].point);
             }
         }
 
@@ -256,7 +249,6 @@ void                   SkelGraph::set_skel_maps(const Skeleton& mcf_skel)
     }
 
 }
-
 void                   SkelGraph::set_skel_extension()
 {
     std::vector<size_t> nr_curr;    // node numbers: root & top
@@ -299,13 +291,14 @@ void                   SkelGraph::set_skel_extension()
 
         for (; it_v != it_v_end; ++it_v)
         {
-            const Point& p3 = (*it_v);
-            double dot_product = (p2.x() - p1.x()) * (p3.x() - p2.x()) 
-                               + (p2.y() - p1.y()) * (p3.y() - p2.y()) 
-                               + (p2.z() - p1.z()) * (p3.z() - p2.z());
-            if (dot_product < 0) { continue; }  // ignore obtuse angle
+            const Point& p3 = *it_v;
+            Vector_3 v1(p1, p2);
+            Vector_3 v2(p2, p3);
             
-            double cosine = dot_product / std::sqrt(CGAL::squared_distance(p2, p3));    // ignore length of <p1,p2>
+
+            double dot_product = v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z();
+            if (dot_product < 0) { continue; }  // ignore obtuse angle
+            double cosine = dot_product / std::sqrt(v2.squared_length());    // ignore length of <p1,p2>
             if (cosine_max < cosine)
             {
                 cosine_max = cosine;
@@ -480,7 +473,8 @@ double                 SkelGraph::get_node_distance(const size_t nd_nr_1, const 
 
 double                 SkelGraph::get_node_distance(const SkelNode& nd1, const SkelNode& nd2) const
 {
-    return sqrt(CGAL::squared_distance(nd1.point(), nd2.point()));
+    Vector_3 v(nd1.point(), nd2.point());
+    return std::sqrt(v.squared_length());
 }
 
 // private
@@ -779,7 +773,6 @@ void                   SkelGraph::print_skel_nodes()
 
     std::cout << "(done)\n" << std::endl;
 }
-
 void                   SkelGraph::print_skel_edges()
 {
     std::cout << "size of skeleton edges: " << this->edge_size << std::endl;
@@ -791,7 +784,6 @@ void                   SkelGraph::print_skel_edges()
     std::cout << "(done)\n" << std::endl;
 
 }
-
 void                   SkelGraph::print_skel_graph()
 {
     this->print_skel_nodes();
@@ -807,13 +799,10 @@ bool compairList::operator()(std::pair<size_t, size_t> pair1, std::pair<size_t, 
     if (pair1.first == pair2.first) { return pair1.second < pair2.second; }
     else { return pair1.first < pair2.first; }
 }
-
 //equal_1::
 bool equal_1::operator()(size_t num) { return num == 1; }
-
 //larger_than_1::
 bool larger_than_1::operator()(size_t num) { return num > 1; }
-
 //larger_than_2::
 bool larger_than_2::operator()(size_t num) { return num > 2; }
 

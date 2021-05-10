@@ -184,7 +184,7 @@ private:
 
 public:
 	SkelMap();
-	SkelMap(const Skeleton& mcf_skel, const Polyhedron& tmesh);
+	SkelMap(const Skeleton& mcf_skel, const Triangle_mesh& tmesh);
 
 private:
 	void push_back(size_t skel_nr, size_t mesh_nr);
@@ -200,7 +200,7 @@ private:
 	std::map<size_t, size_t> skel_ext;	//<skel_nd_nr, tmesh_v_nr>
 public:
 	//FullSkeleton();
-	//FullSkeleton(const SkelGraph& skel_graph, const Polyhedron& tmesh);
+	//FullSkeleton(const SkelGraph& skel_graph, const Triangle_mesh& tmesh);
 };
 
 END_PROJECT_NAMESPACE

@@ -12,7 +12,7 @@ BEGIN_PROJECT_NAMESPACE
 class Segmentation
 {
 public:
-	Segmentation(Skeleton& skeleton, Polyhedron& tmesh);
+	Segmentation(Skeleton& skeleton, Triangle_mesh& tmesh);
 };
 
 END_PROJECT_NAMESPACE
