@@ -111,22 +111,22 @@ void Display::display(const MAT_3d& V, const MAT_2i& E)
 }
 
 
-//void Display::display(const Triangle_mesh& tmesh)
-//{
-//    this->display_tmesh(tmesh);
-//}
-//void Display::display(const Skeleton& skeleton)
-//{
-//    this->display_skeleton(skeleton);
-//}
-//void Display::display(const Skel& skel)
-//{
-//    this->display_skel(skel);
-//}
-//void Display::display(const SkelGraph& skel_graph)
-//{
-//    this->display_skel_graph(skel_graph);
-//}
+void Display::display(const Triangle_mesh& tmesh)
+{
+    this->display_tmesh(tmesh);
+}
+void Display::display(const Skeleton& skeleton)
+{
+    this->display_skeleton(skeleton);
+}
+void Display::display(const Skel& skel)
+{
+    this->display_skel(skel);
+}
+void Display::display(const SkelGraph& skel_graph)
+{
+    this->display_skel_graph(skel_graph);
+}
 
 
 

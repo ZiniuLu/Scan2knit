@@ -44,6 +44,7 @@ public:
 	Display(const MAT_3d& V, const MAT_2i& E, const MAT_3i& F);
 	Display(const MAT_3d& V, const MAT_3i& F);
 	Display(const MAT_3d& V, const MAT_2i& E);
+
 	Display(const Triangle_mesh& tmesh);
 	Display(const Skeleton& skeleton);
 	Display(const Skel& skel);
@@ -54,12 +55,10 @@ public:
 	void display(const MAT_3d& V, const MAT_3i& F);
 	void display(const MAT_3d& V, const MAT_2i& E);
 
-
-	//void display(const Triangle_mesh& tmesh);// display triangle mesh
-	//void display(const Skeleton& skeleton);
-	//void display(const Skel& skel);
-	//void display(const SkelGraph& skel_graph);
-
+	void display(const Triangle_mesh& tmesh);// display triangle mesh
+	void display(const Skeleton& skeleton);
+	void display(const Skel& skel);
+	void display(const SkelGraph& skel_graph);
 };
 
 END_PROJECT_NAMESPACE

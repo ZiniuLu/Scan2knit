@@ -124,9 +124,13 @@ int main(int argc, char *argv[])
         std::cout << "Cannot find file name in Settings.csv !" << std::endl;
         return EXIT_SUCCESS;
     }
-    // 2. get mesh
-    Mesh mesh("../data/teddy.off");
-    if (!mesh.is_triangle_mesh()) { return EXIT_FAILURE; }
+    // 2. open mesh file
+    std::string file = settings.ROOT_DIR + "data/" + settings.FILE_NAME;
+    Mesh mesh(file);
+    if (!mesh.is_triangle_mesh()) 
+    { 
+        return EXIT_FAILURE; 
+    }
 
     Display display;
     display.display(mesh.get_tmesh());
