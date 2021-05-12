@@ -11,28 +11,17 @@
 
 BEGIN_PROJECT_NAMESPACE
 
-// basic log utility
-enum severity_level {trace, debug, info, warning, error, fatal};
-extern const std::string severity_names[6];
+class Settings
+{
+public:
+	std::string ROOT_DIR = "../";	// root directory of current solution
+	std::string FILE_NAME = "";	// file name of 3d mesh, read from Settings.csv
+	double	   obj_scale = 1.0;
+	double	   stitch_width = 0.96;
+	double	   stitch_height = 0.42;
+	double	   offset_percent = 0.1;
+};
 
-/*
-# define LOG( level, message )                                              \
-{                                                                           \
-  if( severity_level::level > severity_level::warning )                     \
-  {                                                                         \
-    std::cout<<"["<<__DATE__<< " " << __TIME__ <<"]"                        \
-             << severity_names[severity_level::level]<< " "                 \
-             << message                                                     \
-             << " (in "<< __FILE__<<":"<< __LINE__ <<")"                    \
-             << std::endl;                                                  \
-  }                                                                         \
-  else                                                                      \
-  {                                                                         \
-    std::cout<<"["<<__DATE__<< " " << __TIME__ <<"]"                        \
-             << severity_names[severity_level::level]<< " "                 \
-             << message << std::endl;                                       \
-  }                                                                         \
-}
-*/
+
 
 END_PROJECT_NAMESPACE
