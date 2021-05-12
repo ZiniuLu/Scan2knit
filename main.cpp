@@ -57,13 +57,13 @@ void get_settings(Settings& settings)
         else if (key == "stitch-width") { settings.stitch_width = stod(value); }
         else if (key == "stitch-height") { settings.stitch_height = stod(value); }
         else if (key == "stitch-height") { settings.stitch_height = stod(value); }
-
-        //std::cout << "ROOT_DIR = " << settings.ROOT_DIR << std::endl;
-        //std::cout << "FILE_NAME = " << settings.FILE_NAME << std::endl;
-        //std::cout << "obj_scale = " << settings.obj_scale << std::endl;
-        //std::cout << "stitch_width = " << settings.stitch_width << std::endl;
-        //std::cout << "stitch_height = " << settings.stitch_height << std::endl;
     }
+
+    //std::cout << "ROOT_DIR = " << settings.ROOT_DIR << std::endl;
+    //std::cout << "FILE_NAME = " << settings.FILE_NAME << std::endl;
+    //std::cout << "obj_scale = " << settings.obj_scale << std::endl;
+    //std::cout << "stitch_width = " << settings.stitch_width << std::endl;
+    //std::cout << "stitch_height = " << settings.stitch_height << std::endl;
 }
 
 int extract_skeletons(const std::vector<std::string> files)
@@ -115,6 +115,7 @@ int extract_skeletons(const std::vector<std::string> files)
 
 int main(int argc, char *argv[])
 {
+    // 1. get parameters from Settings.csv
     Settings settings;
     get_settings(settings);
 
