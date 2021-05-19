@@ -25,4 +25,4 @@ file(GLOB TPLTFILES *.hpp)
 
 # add_library(myLib SHARED file.cpp)
 add_executable(${PROJECT_NAME} ${SRCFILES} ${HEADFILES} ${TPLTFILES})
-target_link_libraries(${PROJECT_NAME} igl::core igl::opengl_glfw)
+target_link_libraries(${PROJECT_NAME} igl::core igl::opengl_glfw igl::opengl_glfw_imgui)
