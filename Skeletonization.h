@@ -16,15 +16,15 @@
 
 BEGIN_PROJECT_NAMESPACE
 
-enum node_type
-{
-	// skeleton structure, parent / children
-	NODE,			// =1 parent && =1 child
-	INTERSECTION,	// =1 parent && >1 children
-	ROOT,			// =0 parent && >0 children
-	TOP,			// =1 parent && =0 children
-	END				// ROOT || TOP
-};
+//enum node_type
+//{
+//	// skeleton structure, parent / children
+//	NODE,			// =1 parent && =1 child
+//	INTERSECTION,	// =1 parent && >1 children
+//	ROOT,			// =0 parent && >0 children
+//	TOP,			// =1 parent && =0 children
+//	END				// ROOT || TOP
+//};
 enum connection_type
 {
 	PARENTS,
@@ -50,8 +50,21 @@ public:
 
 class SkelNode : public Node
 {
+public:
+	enum : char
+	{
+		NODE		 = 'N',
+		INTERSECTION = 'I',
+		ROOT		 = 'R',
+		TOP			 = 'T',
+		EXTENTION	 = 'E',
+		RING_TOP	 = 't',
+		RING_root	 = 'r',
+		// currently does not support ring-structure
+	};
+
 private:
-	node_type type = NODE;
+	char type = SkelNode::NODE;
 	std::vector<Point> mapping_vertices;
 
 
@@ -60,8 +73,8 @@ public:
 	SkelNode(const size_t nd_nr, const Point& p);
 	SkelNode(const std::pair<size_t, Point>& nd);
 
-	void					  set_type(const node_type nd_type);
-	node_type				  get_type();
+	void					  set_type(const char nd_type);
+	char					  get_type();
 	void					  set_mapping_vertices(const std::vector<Point>& v_map);
 	const std::vector<Point>& get_mapping_vertices() const;
 };
@@ -82,6 +95,34 @@ public:
 	// source & target: node_number, begin with 1 !!!
 };
 
+class SkelChain
+{
+private:
+	char chain_type_source = SkelNode::NODE;
+	char chain_type_target = SkelNode::NODE;
+	std::vector<size_t> chain;
+
+public:
+	SkelChain();
+	SkelChain(std::vector<size_t> skel_chain, char source_type, char target_type);
+
+	void set_chain(std::vector<size_t> skel_chain);
+	void set_type(char source_type, char target_type);
+
+	void get_chain(std::vector<size_t>& skel_chain);
+	char get_source_type();
+	char get_target_type();
+};
+
+class SkelExtention
+{
+private:
+	std::map<size_t, size_t> skel_ext;	//<skel_nd_nr, tmesh_v_nr>
+public:
+	//FullSkeleton();
+	//FullSkeleton(const SkelGraph& skel_graph, const Triangle_mesh& tmesh);
+};
+
 
 class Skel
 {
@@ -91,75 +132,76 @@ private:
 
 public:
 	Skel();
-	Skel(const Mesh& mesh);
-	Skel(const Skeleton& skeleton);
-	void			extract_to_end(const Mesh& mesh);
-	//void			extract_step_by_step(const Mesh& mesh);
-	const v_string& get_file_path() const;
-	const Skeleton& get_skeleton() const;
+	Skel(Mesh& mesh);
+	Skel(Skeleton& skeleton);
+
+	void	  extract_to_end(Mesh& mesh);
+	v_string& get_file_path();
+	Skeleton& get_skeleton();
 };
 
 class SkelGraph
 {
 private:
-	v_string						filePath;
+	v_string					   filePath;
 
-	size_t							node_size = 0;
-	size_t							edge_size = 0;
+	size_t						   node_size = 0;
+	size_t						   edge_size = 0;
 
-	size_t							root_node_number = 0;
-	std::vector<size_t>				top_node_numbers;
-	std::vector<size_t>				intersection_node_numbers;
-	std::vector<Point>				skel_extension;
+	size_t						   root_node_number = 0;
+	std::vector<size_t>			   top_node_numbers;
+	std::vector<size_t>			   intersection_node_numbers;
+	std::vector<Point>			   skel_extension;
 
-	std::vector<SkelNode>			skel_nodes;	// node number begins with 1 !!!
-	std::vector<SkelEdge>			skel_edges;	// only contain node numbers
-	std::list<std::vector<size_t>>  skel_segments; // root/top/intersection -> intersection
-
-	size_t							contains_node(const Point& p);
-	size_t							analyse_skel_structure();	// currently don't consider ring-skel
-	size_t							analyse_tree_segments(
-										const std::set<size_t>& nd_type_end, 
-										const std::set<size_t>& nd_type_intersection);
-	void	 						set_node_type(size_t nd_nr, node_type nd_type);
+	std::vector<SkelNode>		   skel_nodes;	// node number begins with 1 !!!
+	std::vector<SkelEdge>		   skel_edges;	// only contain node numbers
+	std::list<SkelChain>		   skel_chains; // source:root/top/intersection -> target:top/intersection
 
 public:
 	SkelGraph();
-	SkelGraph(const Skel& skel);
+	SkelGraph(Skel& skel, Mesh& mesh);
 
-	void							set_skel_graph(const Skeleton& mcf_skel);
-	void							set_skel_nodes(const Skeleton& mcf_skel);
-	void							set_skel_edges(const Skeleton& mcf_skel);
-	void							set_skel_maps(const Skeleton& mcf_skel);
-	void							set_skel_extension();
-	void							output_skel_to_files();
-	void							output_skel_file();
-	void							output_map_file();
-	//void							output_top_map_file();	// mapping with root/top nodes
-	//void							output_intersection_map_file();
-	void							output_extension_file();
-
-	const std::vector<SkelNode>&	get_skel_nodes() const;
-	const std::vector<SkelEdge>&	get_skel_edges() const;
-	const SkelNode&					get_skel_node(const size_t node_number) const;
-	std::vector<Point>&				get_skel_map(const size_t node_number) const;
-	size_t							get_root_node_number();
+	void						 set_skel_graph(const Skeleton& skel, const Triangle_mesh& tmesh);	// main function of SkelGraph
+	const std::vector<SkelNode>& get_skel_nodes() const;
+	const std::vector<SkelEdge>& get_skel_edges() const;
+	const SkelNode&				 get_skel_node(const size_t node_number) const;
+	std::vector<Point>&			 get_skel_map(const size_t node_number) const;
+	size_t						 get_root_node_number();
 	
-	double get_segment_distance(const std::vector<size_t>& skel_segment) const;
-	double get_edge_distance(const std::vector<SkelEdge>::iterator& it_eg) const;
-	double get_node_distance(const size_t nd_nr_1, const size_t nd_nr_2) const;
-	double get_node_distance(const SkelNode& nd1, const SkelNode& nd2) const;
+	double						 get_segment_distance(const std::vector<size_t>& skel_segment) const;
+	double						 get_edge_distance(const std::vector<SkelEdge>::iterator& it_eg) const;
+	double						 get_node_distance(const size_t nd_nr_1, const size_t nd_nr_2) const;
+	double						 get_node_distance(const SkelNode& nd1, const SkelNode& nd2) const;
+
+	// output skel relevant info to files
+	void						 output_skel_to_files();
+	void						 output_skel_file();
+	void						 output_map_file();
+	void						 output_extension_file();
+
 	// test
-	void print_skel_nodes();
-	void print_skel_edges();
-	void print_skel_graph();
+	void						 print_skel_nodes();
+	void						 print_skel_edges();
+	void						 print_skel_graph();
+
+private:
+	size_t contains_node(const Point& p);
+	void   set_node_type(size_t nd_nr, char nd_type);
+	void   analyse_skel_strucure();
+	void   analyse_skel_node_type(
+		std::set<size_t>& node_type_top, 
+		std::set<size_t>& node_type_intersection);
+	size_t analyse_skel_chains(
+		const std::set<size_t>& nd_type_top,
+		const std::set<size_t>& nd_type_intersection);
 };
 
-class compairList
-{
-public:
-	bool operator()(std::pair<size_t, size_t> pair1, std::pair<size_t, size_t> pair2);
-};
+//class compairList
+//{
+////public :
+//	bool operator()(std::pair<size_t, size_t> pair1, std::pair<size_t, size_t> pair2);
+//};
+
 class equal_1
 {
 public:
@@ -176,7 +218,7 @@ public:
 	bool operator()(size_t num);
 };
 
-/*
+
 class SkelMap	// skel_point -> mesh_points
 {
 private:
@@ -190,17 +232,6 @@ private:
 	void push_back(size_t skel_nr, size_t mesh_nr);
 	void sort();
 
-};
-*/
-
-
-class SkelExtention
-{
-private:
-	std::map<size_t, size_t> skel_ext;	//<skel_nd_nr, tmesh_v_nr>
-public:
-	//FullSkeleton();
-	//FullSkeleton(const SkelGraph& skel_graph, const Triangle_mesh& tmesh);
 };
 
 END_PROJECT_NAMESPACE

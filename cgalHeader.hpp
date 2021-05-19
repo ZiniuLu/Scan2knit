@@ -88,9 +88,3 @@ struct Facet_with_id_pmap : public boost::put_get_helper<ValueType&, Facet_with_
 private:
     std::vector<ValueType>& internal_vector;
 };
-
-
-//double gmpq2double(CGAL::Gmpq r)
-//{
-//    return r.numerator().to_double() / r.denominator().to_double();
-//}
