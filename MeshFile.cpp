@@ -8,9 +8,9 @@
 
 #include "MeshFile.h"
 
-using std::cout;
-using std::cin;
-using std::endl;
+//using std::cout;
+//using std::cin;
+//using std::endl;
 
 BEGIN_PROJECT_NAMESPACE
 
@@ -70,7 +70,7 @@ Mesh::Mesh(MeshFile& meshFile)
 
 
 // public
-void				 Mesh::load_mesh_file(MeshFile& meshFile)
+void		   Mesh::load_mesh_file(MeshFile& meshFile)
 {
 	this->filePath = meshFile.get_file_path();
 
@@ -90,10 +90,10 @@ void				 Mesh::load_mesh_file(MeshFile& meshFile)
 
 	//pmesh2tmesh(pmesh);
 }
-bool				 Mesh::is_triangle_mesh() { return this->is_tmesh; }
+bool		   Mesh::is_triangle_mesh() { return this->is_tmesh; }
 
-const Triangle_mesh& Mesh::get_tmesh() const { return this->tmesh; }
-const v_string&		 Mesh::get_file_path() const { return this->filePath; }
+Triangle_mesh& Mesh::get_tmesh() { return this->tmesh; }
+v_string&	   Mesh::get_file_path() { return this->filePath; }
 
 // private
 int					 Mesh::load_obj(MeshFile& meshFile)
@@ -111,9 +111,9 @@ int					 Mesh::load_off(MeshFile& meshFile)
 		std::cout << "\nInput geometry is not triangulated." << std::endl;
 		return EXIT_FAILURE;
 	}
+	std::cout << "done." << std::endl;
 
 	// print geometry info
-	std::cout << "done" << std::endl;
 	std::cout << "number of vertices: \t" << boost::num_vertices(this->tmesh) << std::endl;
 	std::cout << "number of edges: \t" << boost::num_edges(this->tmesh) << std::endl;
 	return EXIT_SUCCESS;

@@ -44,10 +44,10 @@ public:
 	Mesh(const std::string filePath);
 	Mesh(MeshFile& meshFile);
 
-	void				 load_mesh_file(MeshFile& meshFile);
-	bool				 is_triangle_mesh();
-	const Triangle_mesh& get_tmesh() const;
-	const v_string&	     get_file_path() const;
+	void		   load_mesh_file(MeshFile& meshFile);
+	bool		   is_triangle_mesh();
+	Triangle_mesh& get_tmesh();
+	v_string&	   get_file_path();
 };
 
 END_PROJECT_NAMESPACE
