@@ -11,17 +11,39 @@
 
 BEGIN_PROJECT_NAMESPACE
 
-class Settings
+struct MESH_FILE
 {
-public:
-	std::string ROOT_DIR = "../";	// root directory of current solution
-	std::string FILE_NAME = "";	// file name of 3d mesh, read from Settings.csv
-	double	   obj_scale = 1.0;
-	double	   stitch_width = 0.96;
-	double	   stitch_height = 0.42;
-	double	   offset_percent = 0.1;
+	std::string folder_path;
+	std::string name;
 };
 
+struct STITCH
+{
+	double obj_scale;
+	double stitch_width;
+	double stitch_height;
+	double layer0_offset;
+};
+
+struct VIEWER
+{
+	double point_size;
+	double line_width;
+	double camera_zoom;
+};
+
+struct Settings
+{
+	bool		loaded;
+	std::string root_path;	// root directory of current solution
+
+	MESH_FILE   File;	// file name of 3d mesh, read from Settings.csv
+	STITCH		Stitch;
+	VIEWER      Viewer;
+
+	void load();
+	void print();
+};
 
 
 END_PROJECT_NAMESPACE
