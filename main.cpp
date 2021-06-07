@@ -10,45 +10,125 @@
 #include <algorithm>
 
 #include "project.h"
+#include "Settings.h"
 #include "MeshFile.h"
 #include "Skeletonization.h"
 #include "Display.h"
 
 using namespace PROJECT_NAMESPACE;
 
-Settings settings;
+/// <summary>
+/// output = 
+/// 0...output to console
+/// 1...output to gui
+/// </summary>
+size_t          output = 1;      // 0...output to console, 1...output to gui
+/// <summary>
+/// process_nr = 
+/// 0...Reset
+/// 1...Load Settings
+/// 2...Load Mesh File
+/// 3...extract skeleton
+/// </summary>
+size_t          process_nr = 0;
+bool            settings_loaded = false;
+bool            is_triangle_mesh = false;
+
+Display*        display = NULL;
+Settings*       settings = NULL;
+GuiConsole*     gui_console = NULL;
+
+Mesh*           mesh = NULL;
+Triangle_mesh*  tmesh = NULL;
+
+Skel*           skel = NULL;
+Skeleton*       skeleton = NULL;
+SkelGraph*      skel_graph = NULL;
+
+void init()
+{
+    display = new Display();
+    settings = new Settings();
+    gui_console = new GuiConsole();
+
+    mesh = new Mesh();
+    //tmesh = new Triangle_mesh();
+
+    skel = new Skel();
+    skeleton = new Skeleton();
+    skel_graph = new SkelGraph();
+}
+
+void clear()
+{
+    delete display;
+    delete settings;
+    delete gui_console;
+
+    //delete tmesh;
+    delete mesh;
+
+    delete skel_graph;
+    delete skeleton;
+    delete skel;
+
+    display = NULL;
+    settings = NULL;
+    gui_console = NULL;
+
+    mesh = NULL;
+    tmesh = NULL;
+
+    skel = NULL;
+    skeleton = NULL;
+    skel_graph = NULL;
+}
 
 int main(int argc, char *argv[])
 {
-    // 1. get parameters from Settings.csv
-    settings.load();
-    if (!settings.loaded)
-    {
-        std::cout << "Cannot find file name in Settings.csv !" << std::endl;
-        return EXIT_SUCCESS;
-    }
+    init();
 
-    // 2. open mesh file
-    std::string file = settings.root_path + settings.File.folder_path + settings.File.name;
-    Mesh mesh(file);
-    if (!mesh.is_triangle_mesh()) 
-    { 
-        return EXIT_FAILURE; 
-    }
+    display->display_default();
 
-    // 3. skeletonization
-    Skel skel(mesh);
-    //Skeleton& skeleton = skel.get_skeleton();
-    //Triangle_mesh& tmesh = mesh.get_tmesh();
-    SkelGraph skel_graph(skel, mesh);
-    skel_graph.output_skel_to_files();
-
-    // 4. segmentation
-    //Segmentation segmentation(skeleton, tmesh);
-
-    Display display;
-    display.display(skel_graph);
-    //display.display("../data/teddy.off"); 
+    clear();
     
     return EXIT_SUCCESS;
 }
+
+
+//{
+    // 1. get parameters from Settings.csv
+    //settings.load();
+    //if (!settings.loaded)
+    //{
+    //    std::cout << "Cannot find file name in Settings.csv !" << std::endl;
+    //    return EXIT_SUCCESS;
+    //}
+    //
+    //Display display;
+    //display.display_default();
+    //
+    //// 2. open mesh file
+    //std::string file = settings.root_path + settings.File.folder_path + settings.File.name;
+    //Mesh mesh(file);
+    //if (!mesh.is_triangle_mesh()) 
+    //{ 
+    //    return EXIT_FAILURE; 
+    //}
+    //
+    //// 3. skeletonization
+    //Skel skel(mesh);
+    ////Skeleton& skeleton = skel.get_skeleton();
+    ////Triangle_mesh& tmesh = mesh.get_tmesh();
+    //SkelGraph skel_graph(skel, mesh);
+    //skel_graph.output_skel_to_files();
+    //
+    //// 4. segmentation
+    ////Segmentation segmentation(skeleton, tmesh);
+    //
+    ////Display display;
+    //display.insert(mesh.get_tmesh());
+    //display.insert(skel_graph);
+    //display.display();
+    ////display.display("../data/teddy.off"); 
+//}
