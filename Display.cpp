@@ -1,12 +1,13 @@
 /* Created on: 10/03/2021
  *     Author: Ziniu Lu (luziniuoskar@outlook.com)
  */
-
 #include <sstream>
 #include <string>
-#include "Display.h"
 #include <vector>
 #include <algorithm>
+
+#include "Display.h"
+#include "Settings.h"
 
 BEGIN_PROJECT_NAMESPACE
 
@@ -15,266 +16,626 @@ RVec_3d IglColor::rgb(uchar r, uchar g, uchar b)
 {
     return RVec_3d(r / 256, g / 256, b / 256);
 }
-RVec_3d IglColor::black()
-{
-    return RVec_3d(0, 0, 0);
-}
-RVec_3d IglColor::white()
-{
-    return RVec_3d(1, 1, 1);
-}
-RVec_3d IglColor::red()
-{
-    return RVec_3d(1, 0, 0);
-}
-RVec_3d IglColor::lime()
-{
-    return RVec_3d(0, 1, 0);
-}
-RVec_3d IglColor::blue()
-{
-    return RVec_3d(0, 0, 1);
-}
-RVec_3d IglColor::yellow()
-{
-    return RVec_3d(1, 1, 0);
-}
-RVec_3d IglColor::cyan()
-{
-    return RVec_3d(0, 1, 1);
-}
-RVec_3d IglColor::magenta()
-{
-    return RVec_3d(1, 0, 1);
-}
-RVec_3d IglColor::silver()
-{
-    return RVec_3d(0.75, 0.75, 0.75);
-}
-RVec_3d IglColor::gray()
-{
-    return RVec_3d(0.5, 0.5, 0.5);
-}
-RVec_3d IglColor::maroon()
-{
-    return RVec_3d(0.5, 0, 0);
-}
-RVec_3d IglColor::olive()
-{
-    return RVec_3d(0.5, 0.5, 0);
-}
-RVec_3d IglColor::green()
-{
-    return RVec_3d(0, 0.5, 0);
-}
-RVec_3d IglColor::purple()
-{
-    return RVec_3d(0.5, 0, 0.5);
-}
-RVec_3d IglColor::teal()
-{
-    return RVec_3d(0, 0.5, 0.5);
-}
-RVec_3d IglColor::navy()
-{
-    return RVec_3d(0, 0, 0.5);
-}
+
+RVec_3d IglColor::black()   { return RVec_3d(0, 0, 0); }
+RVec_3d IglColor::white()   { return RVec_3d(1, 1, 1); }
+RVec_3d IglColor::red()     { return RVec_3d(1, 0, 0); }
+RVec_3d IglColor::lime()    { return RVec_3d(0, 1, 0); }
+RVec_3d IglColor::blue()    { return RVec_3d(0, 0, 1); }
+RVec_3d IglColor::yellow()  { return RVec_3d(1, 1, 0); }
+RVec_3d IglColor::cyan()    { return RVec_3d(0, 1, 1); }
+RVec_3d IglColor::magenta() { return RVec_3d(1, 0, 1); }
+RVec_3d IglColor::silver()  { return RVec_3d(0.75, 0.75, 0.75); }
+RVec_3d IglColor::gray()    { return RVec_3d(0.5, 0.5, 0.5); }
+RVec_3d IglColor::maroon()  { return RVec_3d(0.5, 0, 0); }
+RVec_3d IglColor::olive()   { return RVec_3d(0.5, 0.5, 0); }
+RVec_3d IglColor::green()   { return RVec_3d(0, 0.5, 0); }
+RVec_3d IglColor::purple()  { return RVec_3d(0.5, 0, 0.5); }
+RVec_3d IglColor::teal()    { return RVec_3d(0, 0.5, 0.5); }
+RVec_3d IglColor::navy()    { return RVec_3d(0, 0, 0.5); }
 
 
 
 
-// BoundingBox
-void BoundingBox::set(MAT_3d& V)
+// IglGeometry::
+void IglGeometry::get_colors_V(MAT_3d& colors_V)
 {
-    size_t numV = V.rows();
-    if (numV <= 0) { return; }
-
-    this->x_min = V(0, 0);
-    this->x_max = V(0, 0);
-    this->y_min = V(0, 1);
-    this->y_max = V(0, 1);
-    this->z_min = V(0, 2);
-    this->z_max = V(0, 2);
-
-    for (int i = 1; i < numV; ++i)
+    size_t numV = this->V.rows();
+    colors_V.resize(numV, 3);
+    size_t i = 0;
+    for (; i < numV; ++i)
     {
-        this->x_min = (V(i, 0) < x_min) ? V(i, 0) : this->x_min;
-        this->x_max = (V(i, 0) > x_max) ? V(i, 0) : this->x_max;
-        this->y_min = (V(i, 1) < y_min) ? V(i, 1) : this->y_min;
-        this->y_max = (V(i, 1) > y_max) ? V(i, 1) : this->y_max;
-        this->z_min = (V(i, 2) < z_min) ? V(i, 2) : this->z_min;
-        this->z_max = (V(i, 2) > z_max) ? V(i, 2) : this->z_max;
+        colors_V.row(i) << this->color_V;
     }
+}
+void IglGeometry::get_colors_E(MAT_3d& colors_E)
+{
+    size_t numE = this->E.rows();
+    colors_E.resize(numE, 3);
+    size_t i = 0;
+    for (; i < numE; ++i)
+    {
+        colors_E.row(i) << this->color_E;
+    }
+}
+void IglGeometry::get_colors_F(MAT_3d& colors_F)
+{
+    size_t numF = this->F.rows();
+    colors_F.resize(numF, 3);
+    size_t i = 0;
+    for (; i < numF; ++i)
+    {
+        colors_F.row(i) << this->color_F;
+    }
+}
+
+// Bound::
+void    Bound::set(std::vector<IglGeometry>& geoms)
+{
+    for (IglGeometry& geo : geoms)
+    {
+        MAT_3d& my_V = geo.V;
+        size_t numV = my_V.rows();
+        if (numV <= 0) { return; }
+
+        RVec_3d m = my_V.colwise().minCoeff();
+        RVec_3d M = my_V.colwise().maxCoeff();
+
+        this->x_min = m(0);
+        this->x_max = M(0);
+        this->y_min = m(1);
+        this->y_max = M(1);
+        this->z_min = m(2);
+        this->z_max = M(2);
+    }
+}
+void    Bound::get_bounding_box_V(MAT_3d& V)
+{
+    V.resize(8, 3);
+    V << this->x_min, this->y_min, this->z_min,
+        this->x_max, this->y_min, this->z_min,
+        this->x_max, this->y_max, this->z_min,
+        this->x_min, this->y_max, this->z_min,
+        this->x_min, this->y_min, this->z_max,
+        this->x_max, this->y_min, this->z_max,
+        this->x_max, this->y_max, this->z_max,
+        this->x_min, this->y_max, this->z_max;
+
+    //F <<0, 2, 1,
+    //    0, 3, 2,
+    //    0, 1, 5,
+    //    0, 5, 4,
+    //    0, 4, 7,
+    //    0, 7, 3,
+    //    6, 7, 4,
+    //    6, 4, 5,
+    //    6, 5, 1,
+    //    6, 1, 2,
+    //    6, 7, 3,
+    //    6, 2, 3;
+}
+RVec_3d Bound::get_xyz_size()
+{
+    return RVec_3d(
+        this->x_max - this->x_min,
+        this->y_max - this->y_min,
+        this->z_max - this->z_min);
+}
+
+
+
+
+//GuiDisplay::
+GuiDisplay::GuiDisplay(IGL_Viewer* p_viewer, IGL_Gui* p_gui, std::vector<IglGeometry>* p_geoms)
+{
+    this->Reset();
+
+    this->viewer = p_viewer;
+    this->gui = p_gui;
+    this->geoms = p_geoms;
+}
+
+void GuiDisplay::Reset()
+{
+    this->viewer = NULL;
+    this->geoms = NULL;
+}
+
+void GuiDisplay::Draw(const char* title, bool* p_open)
+{
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 260.0f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(200.0f, 500.0f), ImGuiCond_FirstUseEver);
+    bool _viewer_menu_visible = true;
+
+    ImGui::Begin(title, &_viewer_menu_visible);
+
+    if (ImGui::CollapsingHeader("Viewing Options", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        // Select rotation type
+        int rotation_type = static_cast<int>(this->viewer->core().rotation_type);
+        static Eigen::Quaternionf trackball_angle = Eigen::Quaternionf::Identity();
+        static bool orthographic = true;
+        ImGui::PushItemWidth(100 * this->gui->menu_scaling());
+        if (ImGui::Combo("Camera Type", &rotation_type, "Trackball\0Two Axes\0002D Mode\0\0"))
+        {
+            using RT = igl::opengl::ViewerCore::RotationType;
+            auto new_type = static_cast<RT>(rotation_type);
+            if (new_type != this->viewer->core().rotation_type)
+            {
+                if (new_type == RT::ROTATION_TYPE_NO_ROTATION)
+                {
+                    trackball_angle = this->viewer->core().trackball_angle;
+                    orthographic = this->viewer->core().orthographic;
+                    this->viewer->core().trackball_angle = Eigen::Quaternionf::Identity();
+                    this->viewer->core().orthographic = true;
+                }
+                else if (this->viewer->core().rotation_type == RT::ROTATION_TYPE_NO_ROTATION)
+                {
+                    this->viewer->core().trackball_angle = trackball_angle;
+                    this->viewer->core().orthographic = orthographic;
+                }
+                this->viewer->core().set_rotation_type(new_type);
+            }
+        }
+
+        // Snap canonical view
+        //ImGui::PushItemWidth(130 * this->gui->menu_scaling());
+        //if (ImGui::Button("Snap canonical view"/*, ImVec2(-1, 0)*/))
+        //{
+        //    this->viewer->snap_to_canonical_quaternion();
+        //}
+
+        // Zoom
+        ImGui::PushItemWidth(100 * this->gui->menu_scaling());
+        //ImGui::DragFloat("Shininess", &(my_viewer.data().shininess), 0.05f, 0.0f, 100.0f);
+        ImGui::DragFloat("Zoom", &(this->viewer->core().camera_zoom), 0.05f, 0.1f, 20.0f);
+
+        // Orthographic view
+        ImGui::Checkbox("Orthographic view", &(this->viewer->core().orthographic));
+
+        // Background
+        ImGui::ColorEdit4("Background", this->viewer->core().background_color.data(),
+            ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueWheel);
+
+        // Line Color
+        ImGui::ColorEdit4("Line color", this->viewer->data().line_color.data(),
+            ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueWheel);
+        ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.3f);
+        ImGui::PopItemWidth();
+    }
+
+    ImGui::Separator();
+
+    if (ImGui::CollapsingHeader("Geometry List", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        for (IglGeometry& geo : *(this->geoms))
+        {
+            size_t& geo_id = geo.id;
+            bool& geo_show = geo.show;
+
+            //make_checkbox(geo.name.c_str(), my_viewer.data().set_visible(geo_show, geo_id));
+
+            if (ImGui::Checkbox(geo.name.c_str(), &(geo_show)))
+            {
+                this->viewer->selected_data_index = geo_id;
+                this->viewer->data().set_visible(geo_show, this->viewer->core_list[0].id);
+                //std::cout << "set " << geo.name << std::boolalpha << " " << geo_show << std::endl;
+            }
+        }
+        //ImGui::PopItemWidth();
+    }
+
+    ImGui::Separator();
+
+    // Set Parameter
+    if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        extern Settings* settings;
+
+        // Select rotation type
+        int active_geo = 0;
+        float active_line_width = settings->Viewer.line_width_skel;
+        float active_line_color = 1;
+        static Eigen::Quaternionf trackball_angle = Eigen::Quaternionf::Identity();
+        static bool orthographic = true;
+        ImGui::PushItemWidth(100 * this->gui->menu_scaling());
+        if (ImGui::Combo("Set active geometry", &active_geo, "A\0B\000C\0\0"))
+        {
+
+        }
+
+        ImGui::PushItemWidth(100 * this->gui->menu_scaling());
+        ImGui::DragFloat("Line width", &active_line_width, 1.0f, 5.0f, 10.0f);
+        ImGui::ColorEdit4("Line color", &active_line_color, /*this->viewer->data().line_color.data(),*/
+            ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueWheel);
+        ImGui::PopItemWidth();
+    }
+
+    ImGui::End();
+}
+
+
+
+
+//GuiControl::
+GuiControl::GuiControl()
+{
+    this->Reset();
+}
+
+void GuiControl::Reset()
+{
+
+}
+
+void GuiControl::Draw(const char* title, bool* p_open)
+{
+    ImGui::SetNextWindowPos(ImVec2(205.0f, 260.0f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(195.0f, 500.0f), ImGuiCond_FirstUseEver);
+    bool _viewer_menu_visible = true;
+
+    ImGui::Begin(title, &_viewer_menu_visible);
+
+    if (ImGui::CollapsingHeader("Load File", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        if (ImGui::Button("Reset            ", ImVec2(-1, 0)))
+        {
+            Print("[Button] Reset");
+            // to do
+            Print("\tReset (to do)");
+            Print("done.\n");
+        }
+
+        if (ImGui::Button("Load Settings    ", ImVec2(-1, 0)))
+        {
+            Print("[Button] Load Settings");
+
+            extern Settings* settings;
+
+            extern size_t output; 
+            extern size_t process_nr;
+            extern bool   settings_loaded;
+
+            if (process_nr == 0 && !settings_loaded)
+            {
+                settings->load(output);
+                
+                if (settings->File.name.length() > 0)
+                {
+                    settings_loaded = true;
+                    process_nr = 1;
+                    Print("done.\n");
+                }
+                else
+                {
+                    settings_loaded = false;
+                    process_nr = 0;
+                    Print("failed.\nCan not load \"Settings.csv\"!");
+                }
+
+            }
+            else
+            {
+                Print("If you want to reload file \"Settings.csv\", please click \"Reset\" button first.");
+            }
+
+            
+        }
+
+        if (ImGui::Button("Load Mesh File   ", ImVec2(-1, 0)))
+        {
+            Print("[Button] Load Mesh File");
+
+            extern bool settings_loaded;
+            extern size_t process_nr;
+
+            extern Settings* settings;
+            extern Mesh* mesh;
+
+            if (process_nr == 0)
+            {
+                Print("Please load settings first!");
+            }
+            else if (process_nr >= 2)
+            {
+                Print("The mesh file has been loaded, if you want to reload, pleace click \"Reset\" button first!");
+            }
+            else if (process_nr == 1)
+            {
+                if (!settings_loaded)
+                {
+                    Print("The settings load was not successful, please modify parameters in \"Settings.csv\" manually!");
+                }
+                else
+                {
+                    Print("Loading mesh file ... ");
+
+                    std::string path = settings->root_path + settings->File.folder_path + settings->File.name;
+                    mesh->load(path);
+
+                    if (mesh->is_triangle_mesh())
+                    {
+                        extern bool is_triangle_mesh;
+                        extern Triangle_mesh* tmesh; 
+                        extern Display* display;
+
+                        is_triangle_mesh = true;
+                        process_nr = 2;
+
+                        tmesh = &(mesh->get_tmesh());
+
+                        display->insert(*tmesh);
+                    }
+                }
+            } // process_nr == 1
+        } // if Button
+    } // group "Load File"
+
+    ImGui::Separator();
+
+    if (ImGui::CollapsingHeader("Skeletonization", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        if (ImGui::Button("Extract Skeleton ", ImVec2(-1, 0)))
+        {
+            Print("[Button] Extract Skeleton");
+
+            extern size_t process_nr;
+            extern Display* display;
+            
+            auto disp = display;
+            size_t& pro_nr = process_nr;
+            auto ins_skels = [disp, &pro_nr]()
+            {
+                extern Mesh* mesh;
+                extern Skel* skel;
+
+                skel->extract_to_end(*mesh);
+
+                SkelGraph skel_graph(*skel, *mesh);
+                skel_graph.output_skel_to_files();
+
+                display->insert(skel_graph);
+                display->display();
+
+                pro_nr = 3;
+            };
+
+            if (process_nr > 3)
+            {
+                Print("To re-extract the skeleton, please click \"Reset\" first!");
+            }
+            else if (process_nr == 0)
+            {
+                Print("Please load settings first!");
+            }
+            else if (process_nr == 1)
+            {
+                Print("Please load mesh file first!");
+            }
+            else if (process_nr == 3)
+            {
+                Print("Re-extracting skeletons ...");
+                Print("\tclear all existing skeletons ...");
+                display->erase(process_nr);
+                Print("\tdone.");
+
+                ins_skels();
+            }
+            else
+            {
+                ins_skels();
+            }
+        }
+
+        if (ImGui::Button("Analyse Structure", ImVec2(-1, 0)))
+        {
+            Print("[Button] Analyse Structure");
+            Print("(to do)");
+        }
+    } // group "skeletonization"
+
+    ImGui::Separator();
+
+    if (ImGui::CollapsingHeader("Slicing", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        if (ImGui::Button("Get Next Stitch   ", ImVec2(-1, 0)))
+        {
+            Print("[Button] Get Next Stitch");
+            std::cout << "" << std::endl;
+        }
+
+        if (ImGui::Button("Get Next layer    ", ImVec2(-1, 0)))
+        {
+            Print("[Button] Get Next layer");
+            std::cout << "" << std::endl;
+        }
+
+        if (ImGui::Button("Slice To End      ", ImVec2(-1, 0)))
+        {
+            Print("[Button] Slice To End");
+            std::cout << "" << std::endl;
+        }
+    }
+
+    ImGui::Separator();
+
+    // Set Parameter
+    if (ImGui::CollapsingHeader("Parameter", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        extern Settings* settings;
+        // set para
+        ImGui::PushItemWidth(60);
+        ImGui::InputDouble("stitch_width ", &(settings->Stitch.stitch_width), 0, 0, "%.3f", 0);
+        ImGui::InputDouble("stitch_height", &(settings->Stitch.stitch_height), 0, 0, "%.3f", 0);
+        ImGui::InputDouble("obj_scale      ", &(settings->Stitch.obj_scale), 0, 0, "%.3f", 0);
+        ImGui::InputDouble("layer0_offset", &(settings->Stitch.layer0_offset), 0, 0, "%.3f", 0);
+        ImGui::PopItemWidth();
+    }
+
+
+    ImGui::End();
 }
 
 
 
 
 // Display::
-Display::Display()                                { }
-Display::Display(std::string path)                { this->display(path); }
-Display::Display(MAT_3d& V, MAT_2i& E, MAT_3i& F) { this->display(V, E, F); }
-Display::Display(MAT_3d& V, MAT_3i& F)            { this->display(V, F); }
-Display::Display(MAT_3d& V, MAT_2i& E)            { this->display(V, E); }
-Display::Display(Triangle_mesh& tmesh)            { this->display_tmesh(tmesh); }
-Display::Display(Skeleton& skeleton)              { this->display_skeleton(skeleton); }
-Display::Display(Skel& skel)                      { this->display_skel(skel); }
-Display::Display(SkelGraph& skel_graph)           { this->display_skel_graph(skel_graph); }
-Display::Display(Stitches& stitches)              { this->display_stitches(stitches); }
+Display::Display()                                  { }
+Display::Display(std::string path)                  { this->insert(path); }
+Display::Display(IglGeometry geom)                  { this->insert(geom); }
+Display::Display(MAT_3d& V, MAT_2i& E, MAT_3i& F)   { this->insert(V, E, F); }
+Display::Display(MAT_3d& V, MAT_3i& F)              { this->insert(V, F); }
+Display::Display(MAT_3d& V, MAT_2i& E)              { this->insert(V, E); }
+Display::Display(Triangle_mesh& tmesh)              { this->insert_tmesh(tmesh); }
+Display::Display(Skeleton& skeleton)                { this->insert_skeleton(skeleton); }
+Display::Display(Skel& skel)                        { this->insert_skel(skel); }
+Display::Display(SkelGraph& skel_graph)             { this->insert_skel_graph(skel_graph); }
+Display::Display(Stitches& stitches)                { this->insert_stitches(stitches); }
 
 
 // public
-void Display::display(std::string path)
+void Display::erase(size_t& process_nr)
 {
-    size_t pos_max = path.length();
-    if (path.find(".off") < pos_max)
+    std::string geo_names[] = { "mesh", "skel", "skel_ext", "skel_map" };
+    std::vector<size_t> idxs;
+
+    switch (process_nr)
     {
-        this->display_off(path);
+    case 2: // erase tmesh, skel x3
+    {
+        idxs.push_back(0);
+        idxs.push_back(1);
+        idxs.push_back(2);
+        idxs.push_back(3);
+        break;
     }
-    else if (path.find(".obj") < pos_max)
+    case 3: // erase skel x3
     {
-        this->display_obj(path);
+        idxs.push_back(1);
+        idxs.push_back(2);
+        idxs.push_back(3);
+        break;
     }
-    else if (path.find(".stl") < pos_max)
-    {
-        this->display_stl(path);
-    }
-}
-void Display::display(MAT_3d& V, MAT_2i& E, MAT_3i& F)
-{
-    int numV = V.rows();
-    int numE = E.rows();
-    int numF = F.rows();
-
-    // set para for current viewer
-    set_parameter();
-
-    // lauch current viewer
-    this->viewer.data().set_mesh(V, F);
-
-    // add edges
-    for (unsigned i = 0; i < numE; ++i)
-    {
-        int index1 = E(i, 0) - 1;   // source vertex number
-        int index2 = E(i, 1) - 1;   // target vertex number
-
-        auto& it_source = V.row(index1);
-        auto& it_target = V.row(index2);
-        auto color_eg = IglColor::red();
-
-        this->viewer.data().add_edges(it_source, it_target, color_eg);
-        this->viewer.launch();
-    }
-}
-void Display::display(MAT_3d& V, MAT_3i& F)
-{
-    int numV = V.rows();
-    int numF = F.rows();
-
-    // set para for current viewer
-    set_parameter();
-
-    // lauch current viewer
-    this->viewer.data().set_mesh(V, F);
-    this->viewer.launch();
-}
-void Display::display(MAT_3d& V, MAT_2i& E)
-{
-    int numV = V.rows();
-    int numE = E.rows();
-
-    // set para for current viewer
-    set_parameter();
-
-    // add points
-    auto color_v = IglColor::black();
-    this->viewer.data().add_points(V, color_v);
-
-    // add edges
-    for (unsigned i = 0; i < numE; ++i)
-    {
-        int index1 = E(i, 0);   // source vertex number
-        int index2 = E(i, 1);   // target vertex number
-
-        auto& it_source = V.row(index1);
-        auto& it_target = V.row(index2);
-        auto color_eg = IglColor::green();
-
-        this->viewer.data().add_edges(it_source, it_target, color_eg);
-    }
-    this->viewer.launch();
-}
-void Display::display(MAT_3d& V, MAT_2i& E, MAT_3i& F, RVec_3d color_V, RVec_3d color_E, RVec_3d color_F)
-{
-    
-}
-void Display::display(MAT_3d& V, MAT_3i& F, RVec_3d color_V, RVec_3d color_F)
-{
-    //this->viewer.data().set_colors()
-}
-void Display::display(MAT_3d& V, MAT_2i& E, RVec_3d color_V, RVec_3d color_E)
-{
-    int numV = V.rows();
-    int numE = E.rows();
-
-    // set para for current viewer
-    set_parameter();
-
-    // add points
-    this->viewer.data().add_points(V, color_V);
-
-    // add edges
-    for (unsigned i = 0; i < numE; ++i)
-    {
-        int index1 = E(i, 0);   // source vertex number
-        int index2 = E(i, 1);   // target vertex number
-
-        auto& it_source = V.row(index1);
-        auto& it_target = V.row(index2);
-
-        this->viewer.data().add_edges(it_source, it_target, color_E);
     }
 
-    // Attach a menu plugin
-    this->set_menu(); 
+    for (size_t i : idxs)
+    {
+        std::string& my_name = geo_names[i];
 
-    this->viewer.launch();
+        size_t offset = 0;
+        while (true)
+        {
+            auto& geoms = this->igl_geoms;
+
+            size_t numGeo = geoms.size();
+            if (offset == numGeo) { break; }
+
+            auto it_geoms_begin = geoms.begin();
+            auto it_geoms_end = geoms.end();
+            auto it_geoms = it_geoms_begin + offset;
+
+            if (it_geoms->name == my_name)
+            {
+                geoms.erase(it_geoms);
+            }
+            else
+            {
+                ++offset;
+            }
+        } // while
+    } // for
+
+    this->display();
+
+    return;
 }
 
+void Display::display_default()
+{
+    set_gui();
+    set_events();
 
-void Display::display(Triangle_mesh& tmesh)
-{
-    this->display_tmesh(tmesh);
+    extern Settings* settings;
+    viewer.launch(true, false, settings->Viewer.viewer_name);
 }
-void Display::display(Skeleton& skeleton)
+void Display::display()
 {
-    this->display_skeleton(skeleton);
-}
-void Display::display(Skel& skel)
-{
-    this->display_skel(skel);
-}
-void Display::display(SkelGraph& skel_graph)
-{
-    this->display_skel_graph(skel_graph);
-}
+    size_t id_max = this->viewer.data_list.size() - 1;
+    for (; id_max > 0; --id_max)
+    {
+        this->viewer.erase_mesh(id_max);
+    }
+    this->viewer.data().clear();
 
-void Display::display(Stitches& stitches)
-{
-    this->display_stitches(stitches);
-}
-void Display::display(Stitches& stitches, size_t pos)
-{
-    display_stitches(stitches, pos);
-}
-void Display::display(Stitches& stitches, size_t pos, size_t len)
-{
-    display_stitches(stitches, pos, len);
+    size_t idx = 0;
+    for (IglGeometry& my_geom : this->igl_geoms)
+    {
+        size_t numV = my_geom.V.rows();
+        size_t numE = my_geom.E.rows();
+        size_t numF = my_geom.F.rows();
+
+        if (numV <= 0) continue;
+
+        if (idx > 0)
+        {
+            this->viewer.append_mesh();
+        }
+        this->viewer.data().clear();
+        set_parameter(my_geom.name);
+
+        if (numE > 0 && numF == 0)
+        {
+            //this->viewer.data().set_vertices(my_geom.V);
+            this->viewer.data().set_edges(my_geom.V, my_geom.E, my_geom.color_E);
+
+            //MAT_3d colors_V;
+            //my_geom.get_colors_V(colors_V);
+            //this->viewer.data().set_colors(colors_V);
+        }
+        else if (numE == 0 && numF > 0)
+        {
+            this->viewer.data().set_mesh(my_geom.V, my_geom.F);
+
+            MAT_3d colors_V;
+            MAT_3d colors_F;
+            my_geom.get_colors_V(colors_V);
+            my_geom.get_colors_F(colors_F);
+            this->viewer.data().set_colors(colors_V);
+            this->viewer.data().set_colors(colors_F);
+        }
+        else if (numE > 0 && numF > 0)
+        {
+            this->viewer.data().set_mesh(my_geom.V, my_geom.F);
+
+            this->viewer.data().set_edges(my_geom.V, my_geom.E, my_geom.color_E);
+
+            MAT_3d colors_V;
+            MAT_3d colors_F;
+            my_geom.get_colors_V(colors_V);
+            my_geom.get_colors_F(colors_F);
+            this->viewer.data().set_colors(colors_V);
+            this->viewer.data().set_colors(colors_F);
+        }
+        else
+        {
+            this->viewer.data().set_vertices(my_geom.V);
+
+            MAT_3d colors_V;
+            my_geom.get_colors_V(colors_V);
+            this->viewer.data().set_colors(colors_V);
+        }
+
+        ++idx;
+    }
+
+    this->set_camera_zoom();
+
+    //viewer.launch();
 }
 
 
 // private
-void Display::display_obj(std::string path)
+void Display::insert_obj(std::string path)
 {
     std::ifstream input;
     input.open(path, std::ios::in);
@@ -335,84 +696,208 @@ void Display::display_obj(std::string path)
             f.push_back(f_);
         }
     }
-
     input.close();
 
     int numV = v.size();
     int numE = e.size();
     int numF = f.size();
 
+    IglGeometry my_geom;    
+    my_geom.name = path.substr(path.rfind("/"));
+    my_geom.id = this->igl_geoms.size();
+
+    MAT_3d& my_V = my_geom.V;
+    MAT_2i& my_E = my_geom.E;
+    MAT_3i& my_F = my_geom.F;
+
     if (numV > 0)
     {
-        this->V.resize(numV, 3);
+        my_geom.color_V = IglColor::black();
+
+        my_V.resize(numV, 3);
         for (int i = 0; i < numV; i++)
         {
-            //this->V.row(i) = RVec_3d(v[i][0], v[i][1], v[i][2]);
-            (this->V)(i, 0) = v[i][0];
-            (this->V)(i, 1) = v[i][1];
-            (this->V)(i, 2) = v[i][2];
+            my_V.row(i) << v[i][0], v[i][1], v[i][2];
         }
     }
     if (numE > 0)
     {
-        this->E.resize(numE, 2);
+        my_geom.color_E = IglColor::black();
+
+        my_E.resize(numE, 2);
         for (int i = 0; i < numE; i++)
         {
-            //this->E.row(i) = RVec_2i(e[i][0], e[i][1]);
-            (this->E)(i, 0) = e[i][0];
-            (this->E)(i, 1) = e[i][1];
+            my_E.row(i) << e[i][0], e[i][1];
         }
     }
     if (numF > 0)
     {
-        this->F.resize(numF, 3);
+        my_geom.color_F = IglColor::yellow();
+
+        my_F.resize(numF, 3);
         for (int i = 0; i < numF; i++)
         {
-            //this->F.row(i) = RVec_3i(f[i][0], f[i][1], f[i][2]);
-            (this->F)(i, 0) = f[i][0];
-            (this->F)(i, 1) = f[i][1];
-            (this->F)(i, 2) = f[i][2];
+            my_F.row(i) << f[i][0], f[i][1], f[i][2];
         }
     }
 
-    if (numE == 0 && numF > 0)      
-    { 
-        display(this->V, this->F); 
-    }
-    else if (numE > 0 && numF == 0)
-    { 
-        display(this->V, this->E); 
-    }
-    else if (numE > 0 && numF > 0)  
-    { 
-        display(this->V, this->E, this->F); 
-    }
+    this->insert_geometry(my_geom);
 }
-
-void Display::display_off(std::string path)
+void Display::insert_off(std::string path)
 {
-    igl::readOFF(path, this->V, this->F);
-    this->viewer.data().set_mesh(this->V, this->F);
-    this->viewer.launch();
+    IglGeometry my_geom; 
+    my_geom.name = path.substr(path.rfind("/"));
+    my_geom.id = this->igl_geoms.size();
+
+    my_geom.color_V = IglColor::black();
+    my_geom.color_F = IglColor::yellow();
+
+    MAT_3d& my_V = my_geom.V;
+    MAT_3i& my_F = my_geom.F;
+
+    igl::readOFF(path, my_V, my_F);
+    this->insert_geometry(my_geom);
 }
-void Display::display_stl(std::string path)
+void Display::insert_stl(std::string path)
 {
     std::ifstream input(path);
+
+    IglGeometry my_geom;
+    my_geom.name = path.substr(path.rfind("/"));
+    my_geom.id = this->igl_geoms.size();
+
+    my_geom.color_V = IglColor::black();
+    my_geom.color_F = IglColor::yellow();
+
+    MAT_3d& my_V = my_geom.V;
+    MAT_3i& my_F = my_geom.F;
     MAT_3d N;
-    igl::readSTL(input, this->V, this->F, N);
 
-    this->viewer.data().set_mesh(this->V, this->F);
-    this->viewer.launch();
-
+    igl::readSTL(input, my_V, my_F, N);
+    this->insert_geometry(my_geom);
 }
 
-void Display::display_tmesh(Triangle_mesh& tmesh)
+void Display::insert_skel_graph(SkelGraph& skel_graph)
+{
+    const std::vector<SkelNode>& skel_nodes = skel_graph.get_skel_nodes();
+    const std::vector<SkelEdge>& skel_edges = skel_graph.get_skel_edges();
+    const std::vector<SkelExtn>& skel_extns = skel_graph.get_skel_extns();
+    
+
+    auto ins_skeleton = [&skel_nodes, &skel_edges, this]()
+    {
+        size_t numV = skel_nodes.size();
+        size_t numE = skel_edges.size();
+
+        MAT_3d my_V;
+        MAT_2i my_E;
+
+        my_V.resize(numV, 3);
+        my_E.resize(numE, 2);
+
+        size_t v_i = 0;
+        for (SkelNode nd : skel_nodes)
+        {
+            const Point& p = nd.point();
+
+            my_V.row(v_i) << p.x(), p.y(), p.z();
+
+            ++v_i;
+        }
+        size_t e_i = 0;
+        for (SkelEdge eg : skel_edges)
+        {
+            my_E.row(e_i) << eg.source() - 1, eg.target() - 1;
+
+            ++e_i;
+        }
+
+        size_t id = this->igl_geoms.size();
+        return IglGeometry("skel", id, my_V, my_E, IglColor::yellow(), IglColor::yellow());
+    };
+    auto ins_extension = [&skel_extns, this]()
+    {
+        MAT_3d my_V;
+        MAT_2i my_E;
+
+        size_t numE = skel_extns.size();
+        size_t numV = 2 * numE;
+
+        my_V.resize(numV, 3);
+        my_E.resize(numE, 2);
+
+        size_t v_i = 0;
+        size_t e_i = 0;
+
+        for (SkelExtn my_extn : skel_extns)
+        {
+            const Point& top_node = my_extn.get_skel_node().point();
+            const Point& extn_point = my_extn.get_extn_point();
+
+            my_V.row(v_i) << top_node.x(), top_node.y(), top_node.z();
+            my_V.row(v_i + 1) << extn_point.x(), extn_point.y(), extn_point.z();
+            my_E.row(e_i) << v_i, v_i + 1;
+
+            v_i += 2;
+            ++e_i;
+        }
+
+        size_t id = this->igl_geoms.size();
+        return IglGeometry("skel_ext", id, my_V, my_E, IglColor::red(), IglColor::red());
+    };
+    auto ins_map_p = [&skel_nodes, this]()
+    {
+        MAT_3d my_V;
+        MAT_2i my_E;
+
+        size_t numV = 0;
+        size_t numE = 0;
+
+        size_t v_i = 0;
+        size_t e_i = 0;
+
+        for (auto& my_nd : skel_nodes)
+        {
+            auto& skel_p = my_nd.point();
+            auto& map_points = my_nd.get_mapping_vertices();
+
+            numV += (map_points.size() + 1);
+            numE += map_points.size();
+
+            my_V.conservativeResize(numV, 3);
+            my_E.conservativeResize(numE, 2);
+
+            my_V.row(v_i) << skel_p.x(), skel_p.y(), skel_p.z();
+            size_t i = v_i;
+            ++v_i;
+            for (auto& map_p : map_points)
+            {
+                my_V.row(v_i) << map_p.x(), map_p.y(), map_p.z();
+                my_E.row(e_i) << i, v_i;
+
+                ++v_i;
+                ++e_i;
+            }
+        }
+        
+        size_t id = this->igl_geoms.size();
+        return IglGeometry("skel_map", id, my_V, my_E, IglColor::green(), IglColor::green());
+    };
+
+    this->insert_geometry(ins_skeleton());
+    this->insert_geometry(ins_extension());
+    this->insert_geometry(ins_map_p());
+}
+void Display::insert_tmesh(Triangle_mesh& tmesh)
 {
     int numV = tmesh.number_of_vertices();
     int numF = tmesh.number_of_faces();
 
-    this->V.resize(numV, 3);
-    this->F.resize(numF, 3);
+    MAT_3d my_V;
+    MAT_3i my_F;
+
+    my_V.resize(numV, 3);
+    my_F.resize(numF, 3);
 
 
     // add vertices
@@ -420,10 +905,7 @@ void Display::display_tmesh(Triangle_mesh& tmesh)
     for (const auto& v : tmesh.vertices())
     {
         const Point& p = tmesh.point(v);
-        //this->V.row(v_i) = RVec_3d(p.x(), p.y(), p.z());
-        (this->V)(v_i, 0) = p.x();
-        (this->V)(v_i, 1) = p.y();
-        (this->V)(v_i, 2) = p.z();
+        my_V.row(v_i) << p.x(), p.y(), p.z();
         ++v_i;
     }
 
@@ -434,7 +916,7 @@ void Display::display_tmesh(Triangle_mesh& tmesh)
         size_t axis = 0;
         for (const vertex_descriptor& vd : CGAL::vertices_around_face(tmesh.halfedge(fd), tmesh))
         {
-            (this->F)(f_i, axis) = vd;
+            my_F(f_i, axis) = vd;
             ++axis;
         }
         //std::cout << "face " << f_i << ": " 
@@ -445,68 +927,76 @@ void Display::display_tmesh(Triangle_mesh& tmesh)
         ++f_i;
     }
 
-    this->viewer.data().set_mesh(this->V, this->F);
-    this->viewer.launch();
-}
+    size_t id = this->igl_geoms.size();
 
-void Display::display_skeleton(Skeleton& skeleton)
-{
-    //Skel skel(skeleton);
-    //this->display_skel(skel);
+    IglGeometry my_geom("mesh", id, my_V, my_F, IglColor::black(), IglColor::yellow());
+    this->insert_geometry(my_geom);
 }
-void Display::display_skel(Skel& skel)
+void Display::insert_skeleton(Skeleton& skeleton)
 {
-    //SkelGraph skel_graph(skel);
-    //this->display_skel_graph(skel_graph);
-}
-void Display::display_skel_graph(SkelGraph& skel_graph)
-{
-    const std::vector<SkelNode>& skel_nodes = skel_graph.get_skel_nodes();
-    const std::vector<SkelEdge>& skel_edges = skel_graph.get_skel_edges();
+    auto& my_nodes = skeleton.m_vertices;  // skeleton nodes with associated mesh vertices
+    auto& my_edges = skeleton.m_edges;
 
-    size_t numV = skel_nodes.size();
-    size_t numE = skel_edges.size();
+    size_t numV = my_nodes.size();
+    size_t numE = my_edges.size();
 
-    this->V.resize(numV, 3);
-    this->E.resize(numE, 2);
+    MAT_3d my_V;
+    MAT_2i my_E;
+
+    my_V.resize(numV, 3);
+    my_E.resize(numE, 2);
+
+    auto it_nd_begin = my_nodes.begin();
+    auto it_nd_end = my_nodes.end();
+    auto it_nd = it_nd_begin;
 
     size_t v_i = 0;
-    for (SkelNode nd : skel_nodes)
+    for (; it_nd != it_nd_end; ++it_nd)
     {
-        const Point& p = nd.point();
+        const Point& my_point = it_nd->m_property.point;
 
-        (this->V)(v_i, 0) = p.x();
-        (this->V)(v_i, 1) = p.y();
-        (this->V)(v_i, 2) = p.z();
+        my_V.row(v_i) << my_point.x(), my_point.y(), my_point.z();
 
         ++v_i;
     }
-    size_t e_i = 0;
-    for (SkelEdge eg : skel_edges)
-    {
-        (this->E)(e_i, 0) = eg.source() - 1;
-        (this->E)(e_i, 1) = eg.target() - 1;
 
+    auto it_eg_begin = my_edges.begin();
+    auto it_eg_end = my_edges.end();
+    auto it_eg = it_eg_begin;
+
+    size_t e_i = 0;
+    for (; it_eg != it_eg_end; ++it_eg)
+    {
+        my_E.row(e_i) << it_eg->m_source, it_eg->m_target;
         ++e_i;
     }
 
-    RVec_3d color_v = IglColor::black();
-    RVec_3d color_e = IglColor::yellow();
-    this->show_menu = true;
+    size_t id = this->igl_geoms.size();
+    IglGeometry my_geom("skel", id, my_V, my_E, IglColor::black(), IglColor::yellow());
+    this->insert_geometry(my_geom);
 
-    this->display(V, E, color_v, color_e);
+}
+void Display::insert_skel(Skel& skel)
+{
+    Skeleton& my_skeleton = skel.get_skeleton();
+    this->insert_skeleton(my_skeleton);
 }
 
-void Display::display_stitches(Stitches& stitches)
+void Display::insert_stitches(Stitches& stitches)
 {
-    display_stitches(stitches, 0, 0);
+    insert_stitches(stitches, 0, 0);
 }
-void Display::display_stitches(Stitches& stitches, size_t pos)
+void Display::insert_stitches(Stitches& stitches, size_t pos)
 {
-    display_stitches(stitches, pos, 0);
+    insert_stitches(stitches, pos, 0);
 }
-void Display::display_stitches(Stitches& stitches, size_t pos, size_t len)
+void Display::insert_stitches(Stitches& stitches, size_t pos, size_t len)
 {
+    // too old, need update
+
+
+
+
     auto& stitches_ = stitches.get();
     uint32_t numV = stitches_.size();
     uint32_t numE;
@@ -524,11 +1014,9 @@ void Display::display_stitches(Stitches& stitches, size_t pos, size_t len)
         auto& v = st.vertex;
         auto& color_v = st.color;
 
-        V(idx, 0) = v(0);
-        V(idx, 1) = v(1);
-        V(idx, 2) = v(2);
+        V.row(idx) << v(0), v(1), v(2);
 
-        viewer.data().add_points(v, color_v);
+        viewer.data().set_vertices(v/*, color_v */);
         //std::cout << "V" << idx << ": " << v << std::endl;
     }
     //viewer.data().add_points(V, IglColor::yellow()); // yellow
@@ -613,107 +1101,110 @@ void Display::display_stitches(Stitches& stitches, size_t pos, size_t len)
     viewer.launch();
 }
 
-void Display::set_parameter()
+
+void Display::set_parameter(const std::string& geom_name)
 {
-    if (V.rows() <= 0) { return; }
-    BoundingBox box;
-    box.set(this->V);
-    this->size = RVec_3d(box.x_max - box.x_min, box.y_max - box.y_min, box.z_max - box.z_min);
-    double volume = this->size(0) * this->size(1) * this->size(2);
+    extern Settings* settings;
 
-    extern Settings settings;
-    this->viewer.data().point_size = settings.Viewer.point_size;
-    this->viewer.data().line_width = settings.Viewer.line_width;
-    this->viewer.core().camera_zoom = settings.Viewer.camera_zoom;
-
-    std::cout << "\nBounding box volumen = " << volume << "\n"
-              << "\t x_min = " << box.x_min << "\t x_max = " << box.x_max << "\t x_length = " << size(0) << "\n"
-              << "\t y_min = " << box.y_min << "\t y_max = " << box.y_max << "\t y_length = " << size(1) << "\n"
-              << "\t z_min = " << box.z_min << "\t z_max = " << box.z_max << "\t z_length = " << size(2) << "\n"
-              << std::endl;
+    if (geom_name == "mesh")
+    {
+        this->viewer.data().point_size = settings->Viewer.point_size_mesh;
+        this->viewer.data().line_width = settings->Viewer.line_width_mesh;
+    }
+    else if (geom_name == "skel")
+    {
+        this->viewer.data().point_size = settings->Viewer.point_size_skel;
+        this->viewer.data().line_width = settings->Viewer.line_width_skel;
+    }
+    else if (geom_name == "skel_ext")
+    {
+        this->viewer.data().point_size = settings->Viewer.point_size_skel_ext;
+        this->viewer.data().line_width = settings->Viewer.line_width_skel_ext;
+    }
+    else if (geom_name == "skel_map")
+    {
+        this->viewer.data().point_size = settings->Viewer.point_size_skel_map;
+        this->viewer.data().line_width = settings->Viewer.line_width_skel_map;
+    }
+    else if (geom_name == "stitch")
+    {
+        this->viewer.data().point_size = settings->Viewer.point_size_stitch;
+        this->viewer.data().line_width = settings->Viewer.line_width_stitch;
+    }
+    else
+    {
+        this->viewer.data().point_size = settings->Viewer.point_size_default;
+        this->viewer.data().line_width = settings->Viewer.line_width_default;
+    }
 }
 
-void Display::set_menu()
+void Display::set_camera_zoom()
 {
-    if (!show_menu) { return; }
+    if (igl_geoms.size() <= 0) { return; }
 
-    this->viewer.plugins.push_back(&(this->menu));
+    Bound& my_bound = this->bound;
+    my_bound.set(this->igl_geoms);
+    
+    RVec_3d my_size = my_bound.get_xyz_size();
+    double volume = my_size(0) * my_size(1) * my_size(2);
 
-    double doubleVariable = 0.1f; // Shared between two menus
+    std::cout
+        << "\nBounding box "<< "\n"
+        << "\tvolumen = " << volume << "\n"
+        //<< "\t x_min = " << bound.x_min << "\t x_max = " << bound.x_max << "\t x_length = " << size(0) << "\n"
+        //<< "\t y_min = " << bound.y_min << "\t y_max = " << bound.y_max << "\t y_length = " << size(1) << "\n"
+        //<< "\t z_min = " << bound.z_min << "\t z_max = " << bound.z_max << "\t z_length = " << size(2) << "\n"
+        << "\tx_length = " << my_size(0) << "\n"
+        << "\ty_length = " << my_size(1) << "\n"
+        << "\tz_length = " << my_size(2) << "\n"
+        << std::endl;
 
-  // Add content to the default menu window
-    this->menu.callback_draw_viewer_menu = [&]()
+    MAT_3d V;
+    my_bound.get_bounding_box_V(V);
+    this->viewer.core().align_camera_center(V);
+    this->viewer.core().set_rotation_type(IGL_ViewerCore::RotationType::ROTATION_TYPE_TRACKBALL);
+}
+
+void Display::set_gui()
+{
+    auto& my_gui = this->gui;
+    auto& my_viewer = this->viewer;
+
+    my_viewer.plugins.push_back(&my_gui);
+
+    bool show_gui_console = true;
+    bool show_gui_display = true;
+    bool show_gui_control = true;
+
+    //Add content to current menu window
+    my_gui.callback_draw_viewer_window = [&]()
     {
-        // Draw parent menu content
-        this->menu.draw_viewer_menu();
+        extern GuiConsole* gui_console;
+        //static GuiConsole& my_console = *gui_console;
+        gui_console->Draw("Console", &show_gui_console);
+        
+        static GuiDisplay gui_display(&my_viewer, &my_gui, &(this->igl_geoms));
+        gui_display.Draw("Display", &show_gui_display);
 
-        // Add new group
-        if (ImGui::CollapsingHeader("New Group", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            // Expose variable directly ...
-            ImGui::InputDouble("double", &doubleVariable, 0, 0, "%.4f");
-
-            // ... or using a custom callback
-            static bool boolVariable = true;
-            if (ImGui::Checkbox("bool", &boolVariable))
-            {
-                // do something
-                std::cout << "boolVariable: " << std::boolalpha << boolVariable << std::endl;
-            }
-
-            // Expose an enumeration type
-            enum Orientation { Up = 0, Down, Left, Right };
-            static Orientation dir = Up;
-            ImGui::Combo("Direction", (int*)(&dir), "Up\0Down\0Left\0Right\0\0");
-
-            // We can also use a std::vector<std::string> defined dynamically
-            static int num_choices = 3;
-            static std::vector<std::string> choices;
-            static int idx_choice = 0;
-            if (ImGui::InputInt("Num letters", &num_choices))
-            {
-                num_choices = std::max(1, std::min(26, num_choices));
-            }
-            if (num_choices != (int)choices.size())
-            {
-                choices.resize(num_choices);
-                for (int i = 0; i < num_choices; ++i)
-                    choices[i] = std::string(1, 'A' + i);
-                if (idx_choice >= num_choices)
-                    idx_choice = num_choices - 1;
-            }
-            ImGui::Combo("Letter", &idx_choice, choices);
-
-            // Add a button
-            if (ImGui::Button("Print Hello", ImVec2(-1, 0)))
-            {
-                std::cout << "Hello\n";
-            }
-        }
+        static GuiControl gui_control;
+        gui_control.Draw("Process Control", &show_gui_control);
     };
+}
 
-    // Draw additional windows
-    this->menu.callback_draw_custom_window = [&]()
+void Display::set_events()
+{
+    this->viewer.callback_key_down = &Display::key_down;
+}
+
+bool Display::key_down(IGL_Viewer& viewer, unsigned char key, int modifier)
+{
+    std::cout << "Key: " << key << " " << (unsigned int)key << std::endl;
+    if (key == '1')
     {
-        // Define next window position + size
-        ImGui::SetNextWindowPos(ImVec2(180.f * this->menu.menu_scaling(), 10), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(200, 160), ImGuiCond_FirstUseEver);
-        ImGui::Begin(
-            "New Window", nullptr,
-            ImGuiWindowFlags_NoSavedSettings
-        );
+        viewer.data().clear();
+    }
 
-        // Expose the same variable directly ...
-        ImGui::PushItemWidth(-80);
-        ImGui::DragScalar("double", ImGuiDataType_Double, &doubleVariable, 0.1, 0, 0, "%.4f");
-        ImGui::PopItemWidth();
-
-        static std::string str = "bunny";
-        ImGui::InputText("Name", str);
-
-        ImGui::End();
-    };
+    return false;
 }
 
 END_PROJECT_NAMESPACE
-
