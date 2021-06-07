@@ -1,6 +1,6 @@
 ####,FILE
 folder_path,data/
-file_name,duck.off
+file_name,hand3.off
 ,
 ####,STITCH
 obj_scale,1
@@ -9,10 +9,22 @@ stitch_height,0.42
 layer0_offset,1
 ,
 ####,VIEWER
-viewer_point_size,5
-viewer_line_width,3.0
-viewer_camera_zoom,4
+viewer_name,Scan2knit
+viewer_point_size_default,1
+viewer_line_width_default,1
+viewer_point_size_mesh,2
+viewer_line_width_mesh,2
+viewer_point_size_skel,5
+viewer_line_width_skel,5
+viewer_point_size_skel_map,1
+viewer_line_width_skel_map,1
+viewer_point_size_skel_ext,5
+viewer_line_width_skel_ext,5
+viewer_point_size_stitch,2
+viewer_line_width_stitch,2
 
+####,OUTPUT	
+output,1	# 0...console, 1...gui
 
 
 
