@@ -114,13 +114,18 @@ public:
 	char get_target_type();
 };
 
-class SkelExtention
+class SkelExtn	// skeleton extension
 {
 private:
-	std::map<size_t, size_t> skel_ext;	//<skel_nd_nr, tmesh_v_nr>
+	SkelNode skel_node;
+	Point	 extn_point;
+
 public:
-	//FullSkeleton();
-	//FullSkeleton(const SkelGraph& skel_graph, const Triangle_mesh& tmesh);
+	SkelExtn();
+	SkelExtn(SkelNode& skel_node, Point& point) :skel_node(skel_node), extn_point(point){ }
+	
+	const SkelNode& get_skel_node() const;
+	const Point&	get_extn_point() const;
 };
 
 
@@ -135,7 +140,7 @@ public:
 	Skel(Mesh& mesh);
 	Skel(Skeleton& skeleton);
 
-	void	  extract_to_end(Mesh& mesh);
+	bool	  extract_to_end(Mesh& mesh);
 	v_string& get_file_path();
 	Skeleton& get_skeleton();
 };
@@ -151,7 +156,7 @@ private:
 	size_t						   root_node_number = 0;
 	std::vector<size_t>			   top_node_numbers;
 	std::vector<size_t>			   intersection_node_numbers;
-	std::vector<Point>			   skel_extension;
+	std::vector<SkelExtn>		   skel_extensions;
 
 	std::vector<SkelNode>		   skel_nodes;	// node number begins with 1 !!!
 	std::vector<SkelEdge>		   skel_edges;	// only contain node numbers
@@ -161,11 +166,15 @@ public:
 	SkelGraph();
 	SkelGraph(Skel& skel, Mesh& mesh);
 
-	void						 set_skel_graph(const Skeleton& skel, const Triangle_mesh& tmesh);	// main function of SkelGraph
+	void						 set_skel_graph(const Skeleton& mcf_skel, const Triangle_mesh& tmesh);	// main function of SkelGraph
+	
 	const std::vector<SkelNode>& get_skel_nodes() const;
 	const std::vector<SkelEdge>& get_skel_edges() const;
+	const std::vector<SkelExtn>& get_skel_extns() const;
+	
 	const SkelNode&				 get_skel_node(const size_t node_number) const;
 	std::vector<Point>&			 get_skel_map(const size_t node_number) const;
+
 	size_t						 get_root_node_number();
 	
 	double						 get_segment_distance(const std::vector<size_t>& skel_segment) const;
@@ -196,27 +205,10 @@ private:
 		const std::set<size_t>& nd_type_intersection);
 };
 
-//class compairList
-//{
-////public :
-//	bool operator()(std::pair<size_t, size_t> pair1, std::pair<size_t, size_t> pair2);
-//};
-
-class equal_1
-{
-public:
-	bool operator()(size_t num);
-};
-class larger_than_1
-{
-public:
-	bool operator()(size_t num);
-};
-class larger_than_2
-{
-public:
-	bool operator()(size_t num);
-};
+//class compairList   { public:	bool operator()(std::pair<size_t, size_t> pair1, std::pair<size_t, size_t> pair2); };
+class equal_1		{ public:	bool operator()(size_t num); };
+class larger_than_1 { public:	bool operator()(size_t num); };
+class larger_than_2 { public:	bool operator()(size_t num); };
 
 
 class SkelMap	// skel_point -> mesh_points
