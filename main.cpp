@@ -15,20 +15,22 @@
 #include "Skeletonization.h"
 #include "Display.h"
 
-using namespace PROJECT_NAMESPACE;
+using namespace PROJECT_NAME;
 
 /// <summary>
 /// output = 
 /// 0...output to console
 /// 1...output to gui
 /// </summary>
-size_t          output = 1;      // 0...output to console, 1...output to gui
+size_t          print_to = 1;      // 0...print to console, 1...output to gui
 /// <summary>
 /// process_nr = 
 /// 0...Reset
 /// 1...Load Settings
 /// 2...Load Mesh File
 /// 3...extract skeleton
+/// 4...segmentation
+/// 5...slicing
 /// </summary>
 size_t          process_nr = 0;
 bool            settings_loaded = false;
@@ -42,7 +44,6 @@ Mesh*           mesh = NULL;
 Triangle_mesh*  tmesh = NULL;
 
 Skel*           skel = NULL;
-Skeleton*       skeleton = NULL;
 SkelGraph*      skel_graph = NULL;
 
 void init()
@@ -52,10 +53,8 @@ void init()
     gui_console = new GuiConsole();
 
     mesh = new Mesh();
-    //tmesh = new Triangle_mesh();
 
     skel = new Skel();
-    skeleton = new Skeleton();
     skel_graph = new SkelGraph();
 }
 
@@ -65,30 +64,25 @@ void clear()
     delete settings;
     delete gui_console;
 
-    //delete tmesh;
     delete mesh;
-
     delete skel_graph;
-    delete skeleton;
     delete skel;
 
-    display = NULL;
-    settings = NULL;
+    display     = NULL;
+    settings    = NULL;
     gui_console = NULL;
 
-    mesh = NULL;
-    tmesh = NULL;
-
-    skel = NULL;
-    skeleton = NULL;
-    skel_graph = NULL;
+    mesh        = NULL;
+    tmesh       = NULL;
+    skel        = NULL;
+    skel_graph  = NULL;
 }
 
 int main(int argc, char *argv[])
 {
     init();
 
-    display->display_default();
+    display->launch();
 
     clear();
     
