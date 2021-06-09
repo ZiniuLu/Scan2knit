@@ -12,6 +12,7 @@ BEGIN_PROJECT_NAMESPACE
 class Segmentation
 {
 public:
+	Segmentation();
 	Segmentation(Skeleton& skeleton, Triangle_mesh& tmesh);
 };
 

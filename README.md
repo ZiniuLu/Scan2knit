@@ -6,6 +6,16 @@ The implementation of my master thesis "Automatische Herstellung von 3D-gestrich
 
 ## Status
 
+![Scan2knit](image/20210609_Scan2knit_GUI.jpg)
+
+![GUI](image/20210609_Scan2knit_Console.jpg)
+
+![mesh](image/20210609_mesh.jpg)
+
+![skel_ext](image/20210609_skel_ext.jpg)
+
+![skeleton](image/20210609_skeleton.jpg)
+
 ![hand with extensions](image/20210415_hand_with_extension_1.png)
 
 ![Console output](image/20210415_Output_from_VSConsole.png)
@@ -37,5 +47,4 @@ From within the `build/Release` or `build/Debug` directory just issue:
 
 
 ## Image
-
 
