@@ -10,8 +10,9 @@
 #include <set>
 
 #include "project.h"
-#include "MeshFile.h"
 #include "cgalHeader.hpp"
+#include "Settings.h"
+#include "MeshFile.h"
 
 
 BEGIN_PROJECT_NAMESPACE
@@ -183,10 +184,10 @@ public:
 	double						 get_node_distance(const SkelNode& nd1, const SkelNode& nd2) const;
 
 	// output skel relevant info to files
-	void						 output_skel_to_files();
-	void						 output_skel_file();
-	void						 output_map_file();
-	void						 output_extension_file();
+	void						 output_skel_graph_to_files(Settings* settings);
+	void						 output_skel_to_file(Settings* settings);
+	void						 output_skel_map_to_file(Settings* settings);
+	void						 output_skel_ext_to_file(Settings* settings);
 
 	// test
 	void						 print_skel_nodes();

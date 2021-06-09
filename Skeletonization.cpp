@@ -13,7 +13,6 @@
 
 BEGIN_PROJECT_NAMESPACE
 
-
 // Node::
 Node::Node() { }
 Node::Node(const size_t nd_nr, const Point& p) { set(nd_nr, p); }
@@ -23,11 +22,7 @@ void         Node::set(const size_t nd_nr, const Point& p) { this->node = std::m
 void         Node::set(const std::pair<size_t, Point>& nd) { this->node = nd; }
 
 size_t       Node::node_number() const { return this->node.first; }
-
 const Point& Node::point() const { return this->node.second; }
-
-
-
 
 // SkelNode:: : public Node
 SkelNode::SkelNode() { }
@@ -59,6 +54,7 @@ SkelEdge::SkelEdge(const std::pair<size_t, size_t>& eg) { this->edge = eg; }
 
 size_t SkelEdge::source() const { return this->edge.first; }
 size_t SkelEdge::target() const { return this->edge.second; }
+
 
 
 
@@ -124,17 +120,18 @@ bool      Skel::extract_to_end(Mesh& mesh)
     this->filePath = mesh.get_file_path();
 
     // 1. extract skeleton;
-    Print("Extracting skeletons ... ");
+    Print("\tExtracting mean curvature flow skeletons ... ");
     auto& tmesh = mesh.get_tmesh();
     CGAL::extract_mean_curvature_flow_skeleton(tmesh, this->skeleton); // caculate object skeleton
-    Print("done.\n");
 
     // 3. caculate V & E numbers
     size_t numV_skel = boost::num_vertices(this->skeleton);
     size_t numE_skel = boost::num_edges(this->skeleton);
     
-    Print("number of vertices: " + numV_skel);
-    Print("number of edges: " + numE_skel);
+    std::ostringstream text;
+    text << "\t\t\tnumber of vertices: \t" << numV_skel << "\n"
+        << "\t\t\tnumber of edges: \t" << numE_skel;
+    Print(text.str());
 }
 
 v_string& Skel::get_file_path() { return this->filePath; }
@@ -256,7 +253,8 @@ void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel,
             SkelExtn my_extension;
 
             SkelNode& nd_top = this->skel_nodes[nr - 1]; // root/top node of skeleton
-            const Point& p_top = nd_top.point();
+            const Point* p_top;
+            p_top = &(nd_top.point());
 
             //Print("TOP node " + nr + ": " + p_top);
 
@@ -270,7 +268,8 @@ void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel,
             double p_y = 0;
             double p_z = 0;
 
-            long double zoom = 0;
+            //long double zoom = 0;
+            double len_max = 0;  // squared length
 
             if (v_maps.size() > 0) 
             { 
@@ -280,6 +279,7 @@ void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel,
             }
             else
             {
+                // sometimes tope_node does not has mapping vertices
                 size_t nr_next2top;
                 for (auto skel_chain : this->skel_chains)
                 {
@@ -299,7 +299,8 @@ void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel,
                     }
                 }
                 const SkelNode& nd_next2top = this->skel_nodes[nr_next2top - 1]; // root/top node of skeleton
-                const Point& p_next2top = nd_next2top.point();
+                //const Point& p_next2top = nd_next2top.point();
+                p_top = &(nd_next2top.point());
                 const auto& v_next_maps = nd_next2top.get_mapping_vertices();
 
                 it_v_begin = v_next_maps.begin();
@@ -310,21 +311,32 @@ void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel,
             for (; it_v != it_v_end; ++it_v)
             {
                 
-                const Point& p_map = *it_v;
-                p_x += p_map.x() - p_top.x();
-                p_y += p_map.y() - p_top.y();
-                p_z += p_map.z() - p_top.z();
+                const Point* p_map = &(*it_v);
+                double _x = p_map->x() - p_top->x();
+                double _y = p_map->y() - p_top->y();
+                double _z = p_map->z() - p_top->z();
+
+                double len = _x * _x + _y * _y + _z * _z;
+                len_max = (len_max > len) ? len_max : len;
+
+                p_x += _x;
+                p_y += _y;
+                p_z += _z;
 
                 //Print("mapping to V\t" + p_map);
-
-                ++zoom;
-
-                //Print("\tp_x = " + p_x + "\tp_y = " + p_y + "\tp_z = " << p_z);
+                //++zoom;
             }
 
-            p_x = p_x / (zoom * 0.9) + p_top.x();
-            p_y = p_y / (zoom * 0.9) + p_top.y();
-            p_z = p_z / (zoom * 0.9) + p_top.z();
+            long double LEN = p_x * p_x + p_y * p_y + p_z * p_z;
+            long double zoom = std::sqrt(LEN / len_max);
+
+            p_x = p_x / zoom + p_top->x();
+            p_y = p_y / zoom + p_top->y();
+            p_z = p_z / zoom + p_top->z();
+
+            //p_x = p_x / (zoom * 0.9) + p_top.x();
+            //p_y = p_y / (zoom * 0.9) + p_top.y();
+            //p_z = p_z / (zoom * 0.9) + p_top.z();
             //Print("p_x = " + p_x + "\tp_y = " + p_y + "\tp_z = " + p_z);
             
             skel_extensions.push_back(SkelExtn(nd_top, Point(p_x, p_y, p_z)));
@@ -332,14 +344,14 @@ void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel,
     };
 
 
-    set_skel_nodes(mcf_skel);
-    set_skel_edges(mcf_skel);
-    set_skel_maps(mcf_skel, tmesh);
+    set_skel_nodes(mcf_skel);       // 2.
+    set_skel_edges(mcf_skel);       // 3.
+    set_skel_maps(mcf_skel, tmesh); // 4.
 
     // 5. find top_node and intersection_node in current skel
     analyse_skel_strucure();
 
-    set_skel_extension();
+    set_skel_extension();   // 6.
 }
 
 const std::vector<SkelNode>& SkelGraph::get_skel_nodes() const { return this->skel_nodes; }
@@ -396,20 +408,25 @@ double                       SkelGraph::get_node_distance(const SkelNode& nd1, c
 }
 
 // output skel relevant info to files
-void                         SkelGraph::output_skel_to_files()
+void                         SkelGraph::output_skel_graph_to_files(Settings* settings)
 {
-    Print("output skeleton graph to files ...");
-    output_skel_file();
-    output_map_file();
-    output_extension_file();
+    Print("\t\toutput skeleton_graph ...");
 
-    Print("output files done.\n");
+    //std::string path = this->filePath[0];
+    Print("\t\t\tgenerating files under \"" + this->filePath[0] + "\"");
+    output_skel_to_file(settings);
+    output_skel_map_to_file(settings);
+    output_skel_ext_to_file(settings);
+
+    Print("\t\tdone.");
 }
-void                         SkelGraph::output_skel_file()
+void                         SkelGraph::output_skel_to_file(Settings* settings)
 {
-    std::string path = this->filePath[0] + this->filePath[1] + "-skel.obj";
-
-    Print("\tsaving all skeleton points and skeleton curves to\t\t\t \"" + path + "\" ... ");
+    std::string path = this->filePath[0] 
+                    + this->filePath[1]
+                    + settings->Skel_out.out_suffix_skel 
+                    + settings->Skel_out.out_file_suffix;//"_skel.obj";
+    Print("\t\t\tsaving skel to \"" + path + "\" ... ");
 
     std::ofstream output(path);
     for (const SkelNode& nd : this->skel_nodes)
@@ -422,12 +439,16 @@ void                         SkelGraph::output_skel_file()
     }
     output.close();
 
-    Print("\tdone.\n");
+    //Print("\t\t\tdone.");
 }
-void                         SkelGraph::output_map_file()
+void                         SkelGraph::output_skel_map_to_file(Settings* settings)
 {
-    std::string path = this->filePath[0] + this->filePath[1] + "-map.obj";
-    Print("\tsaving all mapping lists of skeleton points and surface points to\t \"" + path + "\" ... ");
+    std::string path = this->filePath[0] 
+                    + this->filePath[1]
+                    + settings->Skel_out.out_suffix_skel_map 
+                    + settings->Skel_out.out_file_suffix;//"_map.obj";
+    Print("\t\t\tsaving skel_map to \"" + path + "\" ... ");
+    
     std::ofstream output(path);
     std::string eg_map;
     for (const SkelNode& nd : this->skel_nodes)
@@ -451,18 +472,18 @@ void                         SkelGraph::output_map_file()
     output << eg_map;
     output.close();
 
-    Print("\tdone.\n");
+    //Print("\t\t\tdone.");
 
 }
-void                         SkelGraph::output_extension_file()
+void                         SkelGraph::output_skel_ext_to_file(Settings* settings)
 {
-    std::string path = this->filePath[0] + this->filePath[1] + "-ext.obj";
-
-    Print("\tsaving all skeleton extension points to\t\t\t\t\t \"" + path + "\" ... ");
+    std::string path = this->filePath[0]
+                    + this->filePath[1]
+                    + settings->Skel_out.out_suffix_skel_ext
+                    + settings->Skel_out.out_file_suffix;//"_ext.obj";
+    Print("\t\t\tsaving skel_ext to \"" + path + "\" ... ");
 
     std::ofstream output(path);
-
-
     std::vector<size_t> nr_curr;    // node numbers: root/top
     std::vector<size_t> nr_next;    // node numbers: node next to root/top
     nr_curr.push_back(this->root_node_number);
@@ -503,7 +524,7 @@ void                         SkelGraph::output_extension_file()
 
     output.close();
 
-    Print("\tdone.\n");
+    //Print("\t\t\tdone.");
 }
 
 //test
@@ -648,20 +669,19 @@ size_t SkelGraph::analyse_skel_chains(
     size_t nd_top_size          = nd_type_top.size();
     size_t nd_intersection_size = nd_type_intersection.size();
 
+    //Print("\n");
     std::ostringstream text1;
-    text1 << "current skeleton contains " << nd_top_size << " top node(s):\t\t\t\t";
-
+    text1 << "\t\t\tnumber of [T]op node(s): " << nd_top_size << "\t\t\t\t\t - { ";
     //std::ostringstream text2;
-    for (size_t nd : nd_type_top) { text1 << std::to_string(nd) << " "; }
-    text1 << "\n";
+    for (size_t nd : nd_type_top) { text1 << "[" << nd << "] "; }
+    text1 << "}\n";
     Print(text1.str());
     text1.clear();
 
     std::ostringstream text2;
-    text2 << "current skeleton contains " << nd_intersection_size << " intersection node(s):\t";
-
-    for (size_t nd : nd_type_intersection) { text2 << nd << " "; }
-    text2 << "\n";
+    text2 << "\t\t\tnumber of [I]ntersection node(s): " << nd_intersection_size << "\t - { ";
+    for (size_t nd : nd_type_intersection) { text2 << "[" << nd << "] "; }
+    text2 << "}\n";
     Print(text2.str());
     text2.clear();
 
@@ -685,10 +705,11 @@ size_t SkelGraph::analyse_skel_chains(
     size_t              p_current;
     int i = 1;
 
-    Print("\nanalyzing node chains from top_node to top_node / intersection_node ...");
+    Print("\n\t\tAnalyzing skel_chains ...");
+    Print("\t\t\t[R] - root_node\t\t[T] - top_node\t\t[I] - intersection_node");
+    Print("\t\t\tskel_chain: [T] -> [T] or [T] -> [I] ...");
 
     chain_current.clear();
-    
     
     for (size_t p_top : nd_type_top)
     {
@@ -697,7 +718,7 @@ size_t SkelGraph::analyse_skel_chains(
         chain_source_type = SkelNode::TOP;
 
         std::ostringstream text3;
-        text3 << "skel_chain " << i << ": \t[T]-[" << p_current << "] -> ";
+        text3 << "\t\t\tskel_chain " << i << ": \t[T]-[" << p_current << "] -> ";
 
         while (true)
         {
@@ -731,7 +752,7 @@ size_t SkelGraph::analyse_skel_chains(
             if (it_its != nd_type_intersection.end())       
             {
                 chain_target_type = SkelNode::INTERSECTION;
-                text3 << "[-" << p_current << "]-[I]";
+                text3 << "[" << p_current << "]-[I]";
                 break;                                      // build connection between node_top and node_intersection
             }
 
@@ -766,7 +787,7 @@ size_t SkelGraph::analyse_skel_chains(
     } // end of for
 
     // 3. find all chains of intersection_node: from intersection_node to intersection_node
-    Print("\nextracting node chains from intersection_node to intersection_node ...");
+    Print("\n\t\t\tskel_chain: [I]->[I] ...");
 
     chain_source_type = SkelNode::INTERSECTION;
     chain_target_type = SkelNode::INTERSECTION;
@@ -797,7 +818,7 @@ size_t SkelGraph::analyse_skel_chains(
 
 
         std::ostringstream text4;
-        text4 << "skel_chain " << i << ": \t[I]-[" << p_current << "] -> ";
+        text4 << "\t\t\tskel_chain " << i << ": \t[I]-[" << p_current << "] -> ";
         chain_current.push_back(*it_intersection);   // the first intersection node
 
         while (true)
@@ -830,7 +851,7 @@ size_t SkelGraph::analyse_skel_chains(
 
             if (it_st == it_st_end)
             {
-                text4 << "\nERROR: cannot find next connection of node" << p_current<<"\n";
+                text4 << "\nERROR: cannot find next connection of node" << p_current <<"\n";
                 break;
             }
         } // end of while
@@ -853,7 +874,8 @@ size_t SkelGraph::analyse_skel_chains(
     } // end of while
 
     // 4. find root node : caculate node amount and vertex amount in each top chain
-    Print("\ncaculate node_amount { associated mesh_vertex_amount } in each chain: ");
+    Print("\n\t\tAnalyzing size of each chain begins with [T]: ");
+    Print("\t\t\t[T]:{ number of node, number of associated mesh_vertex }");
     std::vector<size_t> chain_nd_amount;    // node_amount in each chain
     std::vector<size_t> chain_vtx_amount;   // mesh_vertex_amount in each chain
 
@@ -887,13 +909,11 @@ size_t SkelGraph::analyse_skel_chains(
         }
 
         chain_vtx_amount.push_back(vtx_amount);
-
         // output
-        text5 << nd_amount << "{" << vtx_amount << "}" << "\t";
+        text5 << "\t\t\t[T]-[" << *(my_chain.begin()) << "]:{ " << nd_amount << ", " << vtx_amount << " }" << "\t";
     }
 
     text5 << "\n";
-
     Print(text5.str());
     text5.clear();
 
@@ -911,9 +931,10 @@ size_t SkelGraph::analyse_skel_chains(
     // set node type: find ROOT node from TOP node
     set_node_type(root_node_number, SkelNode::ROOT);
     std::ostringstream text6;
-    text6 << "\nroot node number: " << root_node_number << "\n\n";
+    text6 << "\n\t\troot node: [R]-[" << root_node_number << "]";
     Print(text6.str());
     text6.clear();
+    Print("\n");
 
     for (size_t t : nd_type_top)
     {
@@ -932,7 +953,7 @@ size_t SkelGraph::analyse_skel_chains(
     //5. merge different node segments
 
     // TODO
-    // currently no need to merge all segments
+    // currently no need to merge and reorder all segments
 
     return this->root_node_number;
 }
