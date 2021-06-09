@@ -101,49 +101,50 @@ void  GuiConsole::Draw(const char* title, bool* p_open)
     //        *p_open = false;
     //    ImGui::EndPopup();
     //}
-    ImGui::TextWrapped("Enter 'HELP' for help.");
-
+    //ImGui::TextWrapped("Enter 'HELP' for help.");
+    //
     // TODO: display items starting from the bottom
-
-    if (ImGui::SmallButton("Add Debug Text"))
-    {
-        AddLog("%d some text", Items.Size);
-        AddLog("some more text");
-        AddLog("display very important message here!");
-    }
-    ImGui::SameLine();
-    if (ImGui::SmallButton("Add Debug Error"))
-    {
-        AddLog("[error] something went wrong");
-    }
-    ImGui::SameLine();
-    if (ImGui::SmallButton("Clear"))
-    {
-        ClearLog();
-    }
-    ImGui::SameLine();
+    //
+    //if (ImGui::SmallButton("Add Debug Text"))
+    //{
+    //    AddLog("%d some text", Items.Size);
+    //    AddLog("some more text");
+    //    AddLog("display very important message here!");
+    //}
+    //ImGui::SameLine();
+    //if (ImGui::SmallButton("Add Debug Error"))
+    //{
+    //    AddLog("[error] something went wrong");
+    //}
+    //ImGui::SameLine();
+    //if (ImGui::SmallButton("Clear"))
     //bool copy_to_clipboard = ImGui::SmallButton("Copy");
     //static float t = 0.0f; if (ImGui::GetTime() - t > 0.02f) 
     //{ 
     //    t = ImGui::GetTime(); 
     //    AddLog("Spam %f", t); 
     //}
-
-    ImGui::Separator();
+    //
+    //ImGui::Separator();
 
     // Options menu
+    //Filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
+    Filter.Draw("Filter", 140);
+    ImGui::SameLine();
     if (ImGui::BeginPopup("Options"))
     {
         ImGui::Checkbox("Auto-scroll", &AutoScroll);
         ImGui::EndPopup();
     }
-
     // Options, Filter
     if (ImGui::Button("Options"))
         ImGui::OpenPopup("Options");
     ImGui::SameLine();
-    //Filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
-    Filter.Draw("Filter", 140);
+    if (ImGui::Button("Clear"))
+    {
+        ClearLog();
+    }
+    //ImGui::SameLine();
     ImGui::Separator();
 
     // Reserve enough left-over height for 1 separator + 1 input text
@@ -384,14 +385,18 @@ END_PROJECT_NAMESPACE
 
 void Print(const std::string& text)
 {
+    extern size_t print_to;
+    Print(text, print_to);
+}
+void Print(const std::string& text, size_t print_to)
+{
     using namespace Scan2knit;
-    extern size_t output;
 
-    if (output == 0)
+    if (print_to == 0)
     {
         std::cout << text << std::endl;
     }
-    else if (output)
+    else if (print_to)
     {
         extern GuiConsole* gui_console;
 
