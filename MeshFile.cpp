@@ -31,18 +31,18 @@ bool MeshFile::open(const std::string& path)
 	this->filePath.push_back(path.substr(indexDot, size_t(len - indexDot)));
 
 	// open file
-	Print("Loading " + this->filePath[1] + this->filePath[2] + " ... ");
+	Print("\t\tSearching file: " + this->filePath[1] + this->filePath[2] + " ... ");
 	this->input = std::ifstream(path);
 	this->isOpen = this->input.is_open();
 
 	if (!this->isOpen)
 	{
-		Print("failed.");
-		Print("Cannot open file: " + this->filePath[1] + " !");
+		Print("\t\tfailed.");
+		Print("\t\tCannot find file: " + this->filePath[1] + " !");
 		return false;
 	}
 
-	Print("done.\n");
+	Print("\t\tdone.");
 	return true;
 
 }
@@ -69,24 +69,22 @@ bool		   Mesh::load_mesh_file(MeshFile& meshFile)
 	this->filePath = meshFile.get_file_path();
 
 	// build triangle mesh
-	Print("Loading triangle mesh ... ");
 	const auto& suffix = this->filePath[2];
-	if (suffix == ".off")
-	{
-		Print("\tfile format: " + suffix);
-		return this->load_off(meshFile);
-	}
-	else if (suffix == ".obj")
-	{
-		Print("\tfile format: " + suffix);
-		return this->load_obj(meshFile);
-	}
+	Print("\t\tfile format: " + suffix);
+	Print("\t\tAnalyzing triangle mesh ... ");
+
+	bool loaded = false;
+	if (suffix == ".off") { loaded = this->load_off(meshFile); }
+	else if (suffix == ".obj") { loaded = this->load_obj(meshFile); }
 	else
 	{
-		Print("\nCurrently does not support \"" + this->filePath[2] + "\"!");
-		Print("Please convert the file format to \".off\" or \".obj\" first!");
-		return false;
+		Print("[error] Currently does not support \"" + this->filePath[2] + "\"!");
+		Print("[error] Please convert the file format to \".off\" or \".obj\" first!");
+		loaded = false;
 	}
+
+	if (loaded) { Print("\t\tdone.\n"); }
+	return loaded;
 }
 bool		   Mesh::is_triangle_mesh() { return this->is_tmesh; }
 
@@ -107,15 +105,17 @@ bool Mesh::load_off(MeshFile& meshFile)
 	// check
 	if (!this->is_tmesh)
 	{
-		Print("failed\nInput geometry is not triangulated.");
+		Print("[error] Failed! Input geometry is not triangulated!");
 		return false;
 	}
 
-	Print("done.\n");
+	//Print("done.\n");
 
 	// print geometry info
-	Print("\tnumber of vertices: \t" + boost::num_vertices(this->tmesh));
-	Print("\tnumber of edges: \t" + boost::num_edges(this->tmesh));
+	std::ostringstream text;
+	text << "\t\t\tnumber of vertices: \t" << boost::num_vertices(this->tmesh) << "\n"
+		<< "\t\t\tnumber of edges: \t" << boost::num_edges(this->tmesh);
+	Print(text.str());
 
 	return true;
 }
