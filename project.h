@@ -9,9 +9,12 @@
 
 #include <imgui.h>
 
-# define PROJECT_NAMESPACE Scan2knit
-# define BEGIN_PROJECT_NAMESPACE namespace PROJECT_NAMESPACE {
+# define PROJECT_NAME Scan2knit
+# define BEGIN_PROJECT_NAMESPACE namespace PROJECT_NAME {
 # define END_PROJECT_NAMESPACE }
+
+#define STRING(x) #x
+#define TO_STRING(x) STRING(x)
 
 BEGIN_PROJECT_NAMESPACE
 
@@ -53,3 +56,4 @@ struct GuiConsole
 END_PROJECT_NAMESPACE
 
 void Print(const std::string& text);
+void Print(const std::string& text, size_t print_to);
