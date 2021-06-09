@@ -1,6 +1,6 @@
 ####,FILE
 folder_path,data/
-file_name,hand3.off
+file_name,duck.off
 ,
 ####,STITCH
 obj_scale,1
@@ -9,7 +9,6 @@ stitch_height,0.42
 layer0_offset,1
 ,
 ####,VIEWER
-viewer_name,Scan2knit
 viewer_point_size_default,1
 viewer_line_width_default,1
 viewer_point_size_mesh,2
@@ -24,7 +23,9 @@ viewer_point_size_stitch,2
 viewer_line_width_stitch,2
 
 ####,OUTPUT	
-output,1	# 0...console, 1...gui
-
-
-
+print_to,1	# 0...console, 1...gui
+out_file_suffix,.obj
+out_suffix_skel,_skel
+out_suffix_skel_map,_skel_map
+out_suffix_skel_ext,_skel_ext
+#out_suffix_seg,_seg
