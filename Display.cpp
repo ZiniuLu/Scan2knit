@@ -9,6 +9,7 @@
 #include "Display.h"
 #include "Settings.h"
 
+
 BEGIN_PROJECT_NAMESPACE
 
 // IglColor::
@@ -33,6 +34,18 @@ RVec_3d IglColor::green()   { return RVec_3d(0, 0.5, 0); }
 RVec_3d IglColor::purple()  { return RVec_3d(0.5, 0, 0.5); }
 RVec_3d IglColor::teal()    { return RVec_3d(0, 0.5, 0.5); }
 RVec_3d IglColor::navy()    { return RVec_3d(0, 0, 0.5); }
+RVec_3d IglColor::random() { return RVec_3d::Random().array().pow(2); }
+MAT_3d IglColor::random(size_t row)
+{
+    MAT_3d color;
+    color.resize(row, 3);
+    for (size_t i = 0; i < row; ++i)
+    {
+        color.row(i) << RVec_3d::Random().array().pow(2);
+    }
+
+    return color;
+}
 
 
 
@@ -72,6 +85,13 @@ void IglGeometry::get_colors_F(MAT_3d& colors_F)
 // Bound::
 void    Bound::set(std::vector<IglGeometry>& geoms)
 {
+    this->x_min = 0;
+    this->x_max = 0;
+    this->y_min = 0;
+    this->y_max = 0;
+    this->z_min = 0;
+    this->z_max = 0;
+
     for (IglGeometry& geo : geoms)
     {
         MAT_3d& my_V = geo.V;
@@ -198,10 +218,10 @@ void GuiDisplay::Draw(const char* title, bool* p_open)
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueWheel);
 
         // Line Color
-        ImGui::ColorEdit4("Line color", this->viewer->data().line_color.data(),
+        ImGui::ColorEdit4("Line color", this->viewer->data(this->viewer->selected_data_index).line_color.data(),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueWheel);
         ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.3f);
-        ImGui::PopItemWidth();
+        //ImGui::PopItemWidth();
     }
 
     ImGui::Separator();
@@ -221,6 +241,47 @@ void GuiDisplay::Draw(const char* title, bool* p_open)
                 this->viewer->data().set_visible(geo_show, this->viewer->core_list[0].id);
                 //std::cout << "set " << geo.name << std::boolalpha << " " << geo_show << std::endl;
             }
+
+            if (geo.name == "skel_map")
+            {
+                ImGui::SameLine();
+                bool same = (geo.color_E.rows() == 1);
+                if (ImGui::Checkbox("same color", &(same)))
+                {
+                    switch (same)
+                    {
+                    case true: // same color
+                    {
+                        geo.color_E.resize(1, 3);
+                        geo.color_E << IglColor::green();
+                        break;
+                    }
+                    case false: // random color
+                    {
+                        size_t v = geo.E(0, 0);
+                        size_t rowE = geo.E.rows();
+                        RVec_3d color = IglColor::random();
+                        geo.color_E.resize(rowE, 3);
+
+                        for (int row = 0; row < rowE; ++row)
+                        {
+                            size_t my_v = geo.E(row, 0);
+                            if (my_v != v)
+                            {
+                                v = my_v;
+                                color = IglColor::random();
+                            }
+
+                            geo.color_E.row(row) << color;
+                        }
+                        break;
+                    }
+                    }
+
+                    extern Display* display;
+                    display->update();
+                }
+            }
         }
         //ImGui::PopItemWidth();
     }
@@ -235,20 +296,18 @@ void GuiDisplay::Draw(const char* title, bool* p_open)
         // Select rotation type
         int active_geo = 0;
         float active_line_width = settings->Viewer.line_width_skel;
-        float active_line_color = 1;
+        //float active_line_color = 1;
         static Eigen::Quaternionf trackball_angle = Eigen::Quaternionf::Identity();
         static bool orthographic = true;
         ImGui::PushItemWidth(100 * this->gui->menu_scaling());
         if (ImGui::Combo("Set active geometry", &active_geo, "A\0B\000C\0\0"))
         {
-
+            
         }
 
         ImGui::PushItemWidth(100 * this->gui->menu_scaling());
-        ImGui::DragFloat("Line width", &active_line_width, 1.0f, 5.0f, 10.0f);
-        ImGui::ColorEdit4("Line color", &active_line_color, /*this->viewer->data().line_color.data(),*/
-            ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueWheel);
-        ImGui::PopItemWidth();
+        ImGui::DragFloat("Line width", &this->viewer->data().line_width, 1.0f, 5.0f, 10.0f);
+        //ImGui::PopItemWidth();
     }
 
     ImGui::End();
@@ -276,15 +335,47 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
     ImGui::Begin(title, &_viewer_menu_visible);
 
+    if (ImGui::Button("Reset            ", ImVec2(-1, 0)))
+    {
+        extern size_t   process_nr;
+        extern bool     settings_loaded;
+        extern bool     is_triangle_mesh;
+
+        extern Settings* settings;
+        extern GuiConsole* gui_console;
+
+        extern Mesh* mesh;
+        extern Triangle_mesh* tmesh;
+        extern Skel* skel;
+        extern SkelGraph* skel_graph;
+
+        delete settings;
+        delete gui_console;
+        delete mesh;
+        delete skel_graph;
+        delete skel;
+
+        process_nr = 0;
+        settings_loaded = false;
+        is_triangle_mesh = false;
+
+        settings = new Settings();
+        gui_console = new GuiConsole();
+
+        mesh = new Mesh();
+        tmesh = NULL;
+        skel = new Skel();
+        skel_graph = new SkelGraph();
+
+        extern Display* display;
+        display->erase(process_nr);
+        Print("All caches have been cleared.\n");
+    }
+
+    ImGui::Separator();
+
     if (ImGui::CollapsingHeader("Load File", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        if (ImGui::Button("Reset            ", ImVec2(-1, 0)))
-        {
-            Print("[Button] Reset");
-            // to do
-            Print("\tReset (to do)");
-            Print("done.\n");
-        }
 
         if (ImGui::Button("Load Settings    ", ImVec2(-1, 0)))
         {
@@ -292,25 +383,25 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
             extern Settings* settings;
 
-            extern size_t output; 
+            extern size_t print_to;
             extern size_t process_nr;
             extern bool   settings_loaded;
 
             if (process_nr == 0 && !settings_loaded)
             {
-                settings->load(output);
+                settings->load(print_to);
                 
                 if (settings->File.name.length() > 0)
                 {
                     settings_loaded = true;
                     process_nr = 1;
-                    Print("done.\n");
+                    Print("\tdone.");
                 }
                 else
                 {
                     settings_loaded = false;
                     process_nr = 0;
-                    Print("failed.\nCan not load \"Settings.csv\"!");
+                    Print("[error] Failed! Can not load \"Settings.csv\"!");
                 }
 
             }
@@ -324,6 +415,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
         if (ImGui::Button("Load Mesh File   ", ImVec2(-1, 0)))
         {
+            Print("\n");
             Print("[Button] Load Mesh File");
 
             extern bool settings_loaded;
@@ -334,11 +426,11 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
             if (process_nr == 0)
             {
-                Print("Please load settings first!");
+                Print("\tPlease load settings first!");
             }
             else if (process_nr >= 2)
             {
-                Print("The mesh file has been loaded, if you want to reload, pleace click \"Reset\" button first!");
+                Print("\tIf you want to reload mesh file, pleace click \"Reset\" button first!");
             }
             else if (process_nr == 1)
             {
@@ -348,7 +440,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
                 }
                 else
                 {
-                    Print("Loading mesh file ... ");
+                    Print("\tLoading mesh file ... ");
 
                     std::string path = settings->root_path + settings->File.folder_path + settings->File.name;
                     mesh->load(path);
@@ -365,7 +457,10 @@ void GuiControl::Draw(const char* title, bool* p_open)
                         tmesh = &(mesh->get_tmesh());
 
                         display->insert(*tmesh);
+                        display->update();
                     }
+
+                    Print("\tdone.");
                 }
             } // process_nr == 1
         } // if Button
@@ -377,34 +472,37 @@ void GuiControl::Draw(const char* title, bool* p_open)
     {
         if (ImGui::Button("Extract Skeleton ", ImVec2(-1, 0)))
         {
+            Print("\n");
             Print("[Button] Extract Skeleton");
 
-            extern size_t process_nr;
+            extern size_t   process_nr;
             extern Display* display;
             
             auto disp = display;
             size_t& pro_nr = process_nr;
             auto ins_skels = [disp, &pro_nr]()
             {
+                extern Settings* settings;
                 extern Mesh* mesh;
                 extern Skel* skel;
 
                 skel->extract_to_end(*mesh);
 
                 SkelGraph skel_graph(*skel, *mesh);
-                skel_graph.output_skel_to_files();
+                skel_graph.output_skel_graph_to_files(settings);
 
                 display->insert(skel_graph);
-                display->display();
+                display->update();
 
                 pro_nr = 3;
+                Print("\tdone.");
             };
 
             if (process_nr > 3)
             {
-                Print("To re-extract the skeleton, please click \"Reset\" first!");
+                Print("If you want to re-extract the skeleton, please click \"Reset\" first!");
             }
-            else if (process_nr == 0)
+            else if (process_nr <= 0)
             {
                 Print("Please load settings first!");
             }
@@ -414,10 +512,10 @@ void GuiControl::Draw(const char* title, bool* p_open)
             }
             else if (process_nr == 3)
             {
-                Print("Re-extracting skeletons ...");
-                Print("\tclear all existing skeletons ...");
+                Print("\tRe-extracting skeletons ...");
+                Print("\t\tclear all existing skeletons ...");
                 display->erase(process_nr);
-                Print("\tdone.");
+                Print("\t\tdone.");
 
                 ins_skels();
             }
@@ -516,7 +614,15 @@ void Display::erase(size_t& process_nr)
         idxs.push_back(3);
         break;
     }
+    default:
+    {
+        for (size_t i = 0; i < 4; ++i)
+        {
+            idxs.push_back(i);
+        }
+        break;
     }
+    } // switch
 
     for (size_t i : idxs)
     {
@@ -545,20 +651,19 @@ void Display::erase(size_t& process_nr)
         } // while
     } // for
 
-    this->display();
+    this->update();
 
     return;
 }
 
-void Display::display_default()
+void Display::launch()
 {
     set_gui();
     set_events();
 
-    extern Settings* settings;
-    viewer.launch(true, false, settings->Viewer.viewer_name);
+    viewer.launch(true, false, TO_STRING(PROJECT_NAME));
 }
-void Display::display()
+void Display::update()
 {
     size_t id_max = this->viewer.data_list.size() - 1;
     for (; id_max > 0; --id_max)
@@ -628,9 +733,8 @@ void Display::display()
         ++idx;
     }
 
+    //this->viewer.data().show_overlay_depth = false;
     this->set_camera_zoom();
-
-    //viewer.launch();
 }
 
 
@@ -749,7 +853,7 @@ void Display::insert_off(std::string path)
     my_geom.name = path.substr(path.rfind("/"));
     my_geom.id = this->igl_geoms.size();
 
-    my_geom.color_V = IglColor::black();
+    my_geom.color_V = IglColor::white();
     my_geom.color_F = IglColor::yellow();
 
     MAT_3d& my_V = my_geom.V;
@@ -856,6 +960,8 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
         size_t v_i = 0;
         size_t e_i = 0;
 
+        MAT_3d color_E;
+
         for (auto& my_nd : skel_nodes)
         {
             auto& skel_p = my_nd.point();
@@ -866,6 +972,8 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
 
             my_V.conservativeResize(numV, 3);
             my_E.conservativeResize(numE, 2);
+            color_E.conservativeResize(numE, 3);
+            RVec_3d my_color = IglColor::random();
 
             my_V.row(v_i) << skel_p.x(), skel_p.y(), skel_p.z();
             size_t i = v_i;
@@ -874,6 +982,7 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
             {
                 my_V.row(v_i) << map_p.x(), map_p.y(), map_p.z();
                 my_E.row(e_i) << i, v_i;
+                color_E.row(e_i) << my_color;
 
                 ++v_i;
                 ++e_i;
@@ -881,7 +990,7 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
         }
         
         size_t id = this->igl_geoms.size();
-        return IglGeometry("skel_map", id, my_V, my_E, IglColor::green(), IglColor::green());
+        return IglGeometry("skel_map", id, my_V, my_E, IglColor::green(), color_E);
     };
 
     this->insert_geometry(ins_skeleton());
@@ -929,7 +1038,8 @@ void Display::insert_tmesh(Triangle_mesh& tmesh)
 
     size_t id = this->igl_geoms.size();
 
-    IglGeometry my_geom("mesh", id, my_V, my_F, IglColor::black(), IglColor::yellow());
+    IglGeometry my_geom("mesh", id, my_V, my_F, IglColor::white(), IglColor::yellow());
+    my_geom.color_E = IglColor::white();
     this->insert_geometry(my_geom);
 }
 void Display::insert_skeleton(Skeleton& skeleton)
@@ -1144,20 +1254,13 @@ void Display::set_camera_zoom()
 
     Bound& my_bound = this->bound;
     my_bound.set(this->igl_geoms);
-    
     RVec_3d my_size = my_bound.get_xyz_size();
     double volume = my_size(0) * my_size(1) * my_size(2);
 
-    std::cout
-        << "\nBounding box "<< "\n"
-        << "\tvolumen = " << volume << "\n"
-        //<< "\t x_min = " << bound.x_min << "\t x_max = " << bound.x_max << "\t x_length = " << size(0) << "\n"
-        //<< "\t y_min = " << bound.y_min << "\t y_max = " << bound.y_max << "\t y_length = " << size(1) << "\n"
-        //<< "\t z_min = " << bound.z_min << "\t z_max = " << bound.z_max << "\t z_length = " << size(2) << "\n"
-        << "\tx_length = " << my_size(0) << "\n"
-        << "\ty_length = " << my_size(1) << "\n"
-        << "\tz_length = " << my_size(2) << "\n"
-        << std::endl;
+    //std::ostringstream text;
+    //text << "\nBounding box \t\t" << "volumen = " << volume << "\n"
+    //    << "\tx = " << my_size(0) << "\ty = " << my_size(1) << "\tz = " << my_size(2) << "\t";
+    //Print(text.str());
 
     MAT_3d V;
     my_bound.get_bounding_box_V(V);
@@ -1179,9 +1282,13 @@ void Display::set_gui()
     //Add content to current menu window
     my_gui.callback_draw_viewer_window = [&]()
     {
-        extern GuiConsole* gui_console;
-        //static GuiConsole& my_console = *gui_console;
-        gui_console->Draw("Console", &show_gui_console);
+        extern size_t print_to;
+        if (print_to == 1)
+        {
+            extern GuiConsole* gui_console;
+            //static GuiConsole& my_console = *gui_console;
+            gui_console->Draw("Console", &show_gui_console);
+        }
         
         static GuiDisplay gui_display(&my_viewer, &my_gui, &(this->igl_geoms));
         gui_display.Draw("Display", &show_gui_display);
@@ -1201,7 +1308,7 @@ bool Display::key_down(IGL_Viewer& viewer, unsigned char key, int modifier)
     std::cout << "Key: " << key << " " << (unsigned int)key << std::endl;
     if (key == '1')
     {
-        viewer.data().clear();
+        //viewer.data().clear();
     }
 
     return false;

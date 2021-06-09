@@ -38,6 +38,8 @@ public:
 	static RVec_3d purple();
 	static RVec_3d teal();
 	static RVec_3d navy();
+	static RVec_3d random();
+	static MAT_3d random(size_t row);
 };
 
 struct IglGeometry
@@ -50,14 +52,14 @@ struct IglGeometry
 	MAT_2i E;
 	MAT_3i F;
 
-	RVec_3d color_V;
-	RVec_3d color_E;
-	RVec_3d color_F;
+	MAT_3d color_V;
+	MAT_3d color_E;
+	MAT_3d color_F;
 
 	IglGeometry() {}
-	IglGeometry(std::string name, size_t id, MAT_3d V, MAT_2i E, RVec_3d color_V, RVec_3d color_E) :name(name), id(id), V(V), E(E), color_V(color_V), color_E(color_E) { }
-	IglGeometry(std::string name, size_t id, MAT_3d V, MAT_3i F, RVec_3d color_V, RVec_3d color_F) :name(name), id(id), V(V), F(F), color_V(color_V), color_F(color_F) { }
-	IglGeometry(std::string name, size_t id, MAT_3d V, MAT_2i E, MAT_3i F, RVec_3d color_V, RVec_3d color_E, RVec_3d color_F) :name(name), id(id), V(V), E(E), F(F), color_V(color_V), color_E(color_E), color_F(color_F) { }
+	IglGeometry(std::string name, size_t id, MAT_3d V, MAT_2i E, MAT_3d color_V, MAT_3d color_E) :name(name), id(id), V(V), E(E), color_V(color_V), color_E(color_E) { }
+	IglGeometry(std::string name, size_t id, MAT_3d V, MAT_3i F, MAT_3d color_V, MAT_3d color_F) :name(name), id(id), V(V), F(F), color_V(color_V), color_F(color_F) { }
+	IglGeometry(std::string name, size_t id, MAT_3d V, MAT_2i E, MAT_3i F, MAT_3d color_V, MAT_3d color_E, MAT_3d color_F) :name(name), id(id), V(V), E(E), F(F), color_V(color_V), color_E(color_E), color_F(color_F) { }
 
 	void get_colors_V(MAT_3d& colors_V);
 	void get_colors_E(MAT_3d& colors_E);
@@ -112,6 +114,12 @@ struct GuiControl
 class Display
 {
 private:
+	/// <summary>
+	/// geo_names[iterator_1][iterator_2]
+	/// iterator_1: process_nr --- [0...5]	  --- reference "process_nr" in main.cpp
+	/// iterator_2: geo_nr     --- [0...Inf.] --- geometry number in current process_nr
+	/// </summary>
+	std::vector<std::vector<std::string>> geo_names;
 	std::vector<IglGeometry> igl_geoms;	// index start from 0
 	IGL_Viewer viewer;
 	IGL_Gui    gui;
@@ -254,8 +262,8 @@ public:
 
 	void erase(size_t& process_nr);
 
-	void display_default();
-	void display();
+	void launch();
+	void update();
 };
 
 END_PROJECT_NAMESPACE
