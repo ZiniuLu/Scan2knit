@@ -23,8 +23,6 @@ struct STITCH
 
 struct VIEWER
 {
-	std::string viewer_name;
-
 	float point_size_default = 1;
 	float line_width_default = 1;
 
@@ -44,13 +42,22 @@ struct VIEWER
 	float line_width_stitch = 5;
 };
 
+struct SKEL_OUT
+{
+	std::string out_file_suffix = ".obj";
+	std::string out_suffix_skel = "_skel";
+	std::string out_suffix_skel_map = "_skel_map";
+	std::string out_suffix_skel_ext = "_skel_ext";
+};
+
 struct Settings
 {
 	std::string root_path;	// root directory of current solution
 
-	MESH_FILE File;	// file name of 3d mesh, read from Settings.csv
-	STITCH    Stitch;
-	VIEWER    Viewer;
+	MESH_FILE	File;	// file name of 3d mesh, read from Settings.csv
+	STITCH		Stitch;
+	VIEWER		Viewer;
+	SKEL_OUT	Skel_out;
 
 	bool load(size_t& output);
 	void print(size_t& output);

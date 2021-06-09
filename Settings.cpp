@@ -37,8 +37,8 @@ bool Settings::load(size_t& output)
         }
     }
 
-    Print("\tFound root path = \"" + this->root_path + "\"");
-    Print("Loading parameters from: \"" + this->root_path + fileName + "\" ... ");
+    Print("\troot path = \"" + this->root_path + "\"");
+    Print("\tLoading settings from: \"" + this->root_path + fileName + "\" ... ");
 
     // get input
     std::string line;
@@ -72,7 +72,6 @@ bool Settings::load(size_t& output)
         else if (key == "stitch_height") { value >> this->Stitch.stitch_height; }
         else if (key == "layer0_offset") { value >> this->Stitch.layer0_offset; }
 
-        else if (key == "viewer_name") { value >> this->Viewer.viewer_name; }
         else if (key == "viewer_point_size_default") { value >> this->Viewer.point_size_default; }
         else if (key == "viewer_line_width_default") { value >> this->Viewer.line_width_default; }
         else if (key == "viewer_point_size_mesh") { value >> this->Viewer.point_size_mesh; }
@@ -86,6 +85,14 @@ bool Settings::load(size_t& output)
         else if (key == "viewer_point_size_stitch") { value >> this->Viewer.point_size_stitch; }
         else if (key == "viewer_line_width_stitch") { value >> this->Viewer.line_width_stitch; }
         else if (key == "viewer_line_width_stitch") { value >> this->Viewer.line_width_stitch; }
+
+        else if (key == "out_file_suffix") { value >> this->Skel_out.out_file_suffix; }
+        else if (key == "out_suffix_skel") { value >> this->Skel_out.out_suffix_skel; }
+        else if (key == "out_suffix_skel_map") { value >> this->Skel_out.out_suffix_skel_map; }
+        else if (key == "out_suffix_skel_ext") { value >> this->Skel_out.out_suffix_skel_ext; }
+
+
+
         else if (key == "output") { value >> output; } // output = 0...console, 1...gui
     } // while
 
@@ -94,45 +101,45 @@ bool Settings::load(size_t& output)
 
 void Settings::print(size_t& output)
 {
-    Print("print all settings ...");
-    Print(" ");
+    Print("\tprint all settings ...");
 
-    Print("Settings:");
-    Print("\troot_path = " + this->root_path);
-    Print(" ");
+    Print("\tSettings:");
+    Print("\t\troot_path = " + this->root_path);
 
-    Print("File:");
-    Print("\tfolder_path = " + this->File.folder_path);
-    Print("\tname = " + this->File.name);
-    Print(" ");
+    Print("\tFile:");
+    Print("\t\tfolder_path = " + this->File.folder_path);
+    Print("\t\tname = " + this->File.name);
 
-    Print("Stitch:");
-    Print("\tobj_scale = " + std::to_string(this->Stitch.obj_scale));
-    Print("\tstitch_width = " + std::to_string(this->Stitch.stitch_width));
-    Print("\tstitch_height = " + std::to_string(this->Stitch.stitch_height));
-    Print("\tlayer0_offset = " + std::to_string(this->Stitch.layer0_offset));
-    Print(" ");
+    Print("\tStitch:");
+    Print("\t\tobj_scale = " + std::to_string(this->Stitch.obj_scale));
+    Print("\t\tstitch_width = " + std::to_string(this->Stitch.stitch_width));
+    Print("\t\tstitch_height = " + std::to_string(this->Stitch.stitch_height));
+    Print("\t\tlayer0_offset = " + std::to_string(this->Stitch.layer0_offset));
 
-    Print("Viewer:");
-    Print("\tviewer_name = " + this->Viewer.viewer_name);
-    Print("\tpoint_size_default = " + std::to_string(this->Viewer.point_size_default));
-    Print("\tline_width_default = " + std::to_string(this->Viewer.line_width_default));
-    Print("\tpoint_size_mesh = " + std::to_string(this->Viewer.point_size_mesh));
-    Print("\tline_width_mesh = " + std::to_string(this->Viewer.line_width_mesh));
-    Print("\tpoint_size_skel = " + std::to_string(this->Viewer.point_size_skel));
-    Print("\tline_width_skel = " + std::to_string(this->Viewer.line_width_skel));
-    Print("\tpoint_size_skel_map = " + std::to_string(this->Viewer.point_size_skel_map));
-    Print("\tline_width_skel_map = " + std::to_string(this->Viewer.line_width_skel_map));
-    Print("\tpoint_size_skel_ext = " + std::to_string(this->Viewer.point_size_skel_ext));
-    Print("\tline_width_skel_ext = " + std::to_string(this->Viewer.line_width_skel_ext));
-    Print("\tpoint_size_stitch = " + std::to_string(this->Viewer.point_size_stitch));
-    Print("\tline_width_stitch = " + std::to_string(this->Viewer.line_width_stitch));
-    Print(" ");
+    Print("\tViewer:");
+    Print("\t\tpoint_size_default = " + std::to_string(this->Viewer.point_size_default));
+    Print("\t\tline_width_default = " + std::to_string(this->Viewer.line_width_default));
+    Print("\t\tpoint_size_mesh = " + std::to_string(this->Viewer.point_size_mesh));
+    Print("\t\tline_width_mesh = " + std::to_string(this->Viewer.line_width_mesh));
+    Print("\t\tpoint_size_skel = " + std::to_string(this->Viewer.point_size_skel));
+    Print("\t\tline_width_skel = " + std::to_string(this->Viewer.line_width_skel));
+    Print("\t\tpoint_size_skel_map = " + std::to_string(this->Viewer.point_size_skel_map));
+    Print("\t\tline_width_skel_map = " + std::to_string(this->Viewer.line_width_skel_map));
+    Print("\t\tpoint_size_skel_ext = " + std::to_string(this->Viewer.point_size_skel_ext));
+    Print("\t\tline_width_skel_ext = " + std::to_string(this->Viewer.line_width_skel_ext));
+    Print("\t\tpoint_size_stitch = " + std::to_string(this->Viewer.point_size_stitch));
+    Print("\t\tline_width_stitch = " + std::to_string(this->Viewer.line_width_stitch));
 
-    Print("Output:");
-    Print("\toutput = " + output);
+    Print("\tOut:");
+    Print("\t\tout_file_suffix = " + this->Skel_out.out_file_suffix);
+    Print("\t\tout_suffix_skel = " + this->Skel_out.out_suffix_skel);
+    Print("\t\tout_suffix_skel_map = " + this->Skel_out.out_suffix_skel_map);
+    Print("\t\tout_suffix_skel_ext = " + this->Skel_out.out_suffix_skel_ext);
 
-    Print("done.\n");
+    Print("\tOutput:");
+    Print("\t\toutput = " + output);
+
+    Print("\tdone.\n");
 }
 
 END_PROJECT_NAMESPACE
