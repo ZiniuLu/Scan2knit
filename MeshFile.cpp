@@ -32,8 +32,9 @@ bool MeshFile::open(const std::string& path)
 
 	// open file
 	Print("\t\tSearching file: " + this->filePath[1] + this->filePath[2] + " ... ");
-	this->input = std::ifstream(path);
-	this->isOpen = this->input.is_open();
+	this->input1 = std::ifstream(path);
+	this->input2 = std::ifstream(path);
+	this->isOpen = this->input1.is_open();
 
 	if (!this->isOpen)
 	{
@@ -49,8 +50,45 @@ bool MeshFile::open(const std::string& path)
 const bool		MeshFile::is_open() const { return this->isOpen; }
 
 const v_string& MeshFile::get_file_path() const { return this->filePath; }
-std::ifstream&	MeshFile::get_ifstream() { return this->input; }
+std::ifstream&	MeshFile::get_ifstream1() { return this->input1; }
+std::ifstream&	MeshFile::get_ifstream2() { return this->input2; }
 
+namespace PMP = CGAL::Polygon_mesh_processing;
+
+int MeshFile::isotropic_remeshing(std::string& in_path, std::string& out_path, double edge_length, size_t nb_iter)
+{
+	std::ifstream input(in_path);
+	r_Mesh r_mesh;
+	if (!input || !(input >> r_mesh) || !CGAL::is_triangle_mesh(r_mesh))
+	{
+		Print("[error] \"" + in_path + "\" is not a valid input file.");
+		return 1;
+	}
+
+	Print("\t\tSplit border...");
+	std::vector<r_edge_descriptor> border;
+
+	PMP::border_halfedges(faces(r_mesh), r_mesh,
+		boost::make_function_output_iterator(halfedge2edge(r_mesh, border)));
+	PMP::split_long_edges(border, edge_length, r_mesh);
+
+	Print("\t\tdone.");
+	std::ostringstream text;
+	text << "\t\tStart remeshing of " << in_path << " (" << num_faces(r_mesh) << " faces) ...";
+	Print(text.str());
+	
+	PMP::isotropic_remeshing(faces(r_mesh), edge_length, r_mesh,
+		PMP::parameters::number_of_iterations(nb_iter).protect_constraints(true));//i.e. protect border, here
+	
+	Print("\t\tdone.");
+	Print("\t\tSaving new mesh to \"" + out_path + "\" ...");
+	std::ofstream output(out_path);
+	output << r_mesh;
+	output.close();
+	Print("\t\tdone.");
+
+	return 0;
+}
 
 
 // Mesh::
@@ -59,12 +97,12 @@ Mesh::Mesh(const std::string& filePath) { this->load(filePath); }
 Mesh::Mesh(MeshFile& meshFile) { this->load_mesh_file(meshFile); }
 
 // public
-bool Mesh::load(const std::string& filePath)
+bool			Mesh::load(const std::string& filePath)
 {
 	MeshFile meshFile(filePath);
 	return this->load_mesh_file(meshFile);
 }
-bool		   Mesh::load_mesh_file(MeshFile& meshFile)
+bool			Mesh::load_mesh_file(MeshFile& meshFile)
 {
 	this->filePath = meshFile.get_file_path();
 
@@ -86,10 +124,11 @@ bool		   Mesh::load_mesh_file(MeshFile& meshFile)
 	if (loaded) { Print("\t\tdone.\n"); }
 	return loaded;
 }
-bool		   Mesh::is_triangle_mesh() { return this->is_tmesh; }
+bool			Mesh::is_triangle_mesh() { return this->is_tmesh; }
 
-Triangle_mesh& Mesh::get_tmesh() { return this->tmesh; }
-v_string&	   Mesh::get_file_path() { return this->filePath; }
+Triangle_mesh&	Mesh::get_tmesh() { return this->tmesh; }
+Polyhedron&		Mesh::get_pmesh() { return this->pmesh; }
+v_string&		Mesh::get_file_path() { return this->filePath; }
 
 // private
 bool Mesh::load_obj(MeshFile& meshFile)
@@ -99,7 +138,8 @@ bool Mesh::load_obj(MeshFile& meshFile)
 }//todo
 bool Mesh::load_off(MeshFile& meshFile)
 {
-	meshFile.get_ifstream() >> this->tmesh;
+	meshFile.get_ifstream1() >> this->tmesh;
+	meshFile.get_ifstream2() >> this->pmesh;
 	this->is_tmesh = CGAL::is_triangle_mesh(this->tmesh);
 
 	// check

@@ -15,6 +15,8 @@
 #include "MeshFile.h"
 
 
+#include <CGAL/boost/graph/split_graph_into_polylines.h>
+
 BEGIN_PROJECT_NAMESPACE
 
 //enum node_type
@@ -129,6 +131,35 @@ public:
 	const Point&	get_extn_point() const;
 };
 
+//only needed for the display of the skeleton as maximal polylines
+struct Display_polylines 
+{
+	const Skeleton&	skeleton;
+	std::ofstream&	out;
+	int				polyline_size;
+	std::stringstream sstr;
+	
+	Display_polylines(const Skeleton& skeleton, std::ofstream& out) : skeleton(skeleton), out(out) {}
+	
+	void start_new_polyline()
+	{
+		polyline_size = 0;
+		sstr.str("");
+		sstr.clear();
+	}
+	
+	void add_node(Skeleton_vertex v) 
+	{
+		++polyline_size;
+		sstr << " " << skeleton[v].point;
+	}
+
+	void end_polyline()
+	{
+		out << polyline_size << sstr.str() << "\n";
+	}
+};
+
 
 class Skel
 {
@@ -144,6 +175,8 @@ public:
 	bool	  extract_to_end(Mesh& mesh);
 	v_string& get_file_path();
 	Skeleton& get_skeleton();
+
+	void	  output_skel_polylines();
 };
 
 class SkelGraph
@@ -167,7 +200,7 @@ public:
 	SkelGraph();
 	SkelGraph(Skel& skel, Mesh& mesh);
 
-	void						 set_skel_graph(const Skeleton& mcf_skel, const Triangle_mesh& tmesh);	// main function of SkelGraph
+	void						 set_skel_graph(const Skeleton& mcf_skel, const Polyhedron& pmesh);	// main function of SkelGraph
 	
 	const std::vector<SkelNode>& get_skel_nodes() const;
 	const std::vector<SkelEdge>& get_skel_edges() const;
@@ -178,10 +211,10 @@ public:
 
 	size_t						 get_root_node_number();
 	
-	double						 get_segment_distance(const std::vector<size_t>& skel_segment) const;
-	double						 get_edge_distance(const std::vector<SkelEdge>::iterator& it_eg) const;
-	double						 get_node_distance(const size_t nd_nr_1, const size_t nd_nr_2) const;
-	double						 get_node_distance(const SkelNode& nd1, const SkelNode& nd2) const;
+	//double						 get_segment_length(const std::vector<size_t>& skel_segment) const;
+	//double						 get_edge_length(const std::vector<SkelEdge>::iterator& it_eg) const;
+	//double						 get_node_length(const size_t nd_nr_1, const size_t nd_nr_2) const;
+	//double						 get_node_length(const SkelNode& nd1, const SkelNode& nd2) const;
 
 	// output skel relevant info to files
 	void						 output_skel_graph_to_files(Settings* settings);
@@ -219,7 +252,7 @@ private:
 
 public:
 	SkelMap();
-	SkelMap(const Skeleton& mcf_skel, const Triangle_mesh& tmesh);
+	SkelMap(const Skeleton& mcf_skel, const Polyhedron& pmesh);
 
 private:
 	void push_back(size_t skel_nr, size_t mesh_nr);

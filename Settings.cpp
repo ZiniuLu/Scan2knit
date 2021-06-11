@@ -46,6 +46,7 @@ bool Settings::load(size_t& output)
     while (std::getline(file, line))
     {
         line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
+        line.erase(std::remove(line.begin(), line.end(), '\t'), line.end());
 
         size_t len = line.length();
         if (len <= 2) continue; // _ , _ : at least 3 characters
@@ -64,14 +65,22 @@ bool Settings::load(size_t& output)
             value = std::stringstream(line.substr(comma + 1, len - comma - 1));    //_ _ , _ _ _ _
         }
 
+        // input
         if (key == "folder_path") { value >> this->File.folder_path; }
         else if (key == "file_name") { value >> this->File.name; }
 
+        // remeshing
+        else if (key == "remeshing_edge_length") { value >> this->Remeshing.remeshing_edge_length; }
+        else if (key == "remeshing_nr_iter") { value >> this->Remeshing.remeshing_nr_iter; }
+        else if (key == "remeshing_out_suffix") { value >> this->Remeshing.remeshing_out_suffix; }
+
+        // stitch
         else if (key == "obj_scale") { value >> this->Stitch.obj_scale; }
         else if (key == "stitch_width") { value >> this->Stitch.stitch_width; }
         else if (key == "stitch_height") { value >> this->Stitch.stitch_height; }
         else if (key == "layer0_offset") { value >> this->Stitch.layer0_offset; }
 
+        // viewer
         else if (key == "viewer_point_size_default") { value >> this->Viewer.point_size_default; }
         else if (key == "viewer_line_width_default") { value >> this->Viewer.line_width_default; }
         else if (key == "viewer_point_size_mesh") { value >> this->Viewer.point_size_mesh; }
@@ -86,6 +95,7 @@ bool Settings::load(size_t& output)
         else if (key == "viewer_line_width_stitch") { value >> this->Viewer.line_width_stitch; }
         else if (key == "viewer_line_width_stitch") { value >> this->Viewer.line_width_stitch; }
 
+        // output
         else if (key == "out_file_suffix") { value >> this->Skel_out.out_file_suffix; }
         else if (key == "out_suffix_skel") { value >> this->Skel_out.out_suffix_skel; }
         else if (key == "out_suffix_skel_map") { value >> this->Skel_out.out_suffix_skel_map; }

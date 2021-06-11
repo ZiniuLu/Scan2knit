@@ -13,6 +13,13 @@ struct MESH_FILE
 	std::string name;
 };
 
+struct REMESHING
+{
+	double		remeshing_edge_length = 1;
+	size_t		remeshing_nr_iter = 3;
+	std::string	remeshing_out_suffix = "_rem.off";
+};
+
 struct STITCH
 {
 	double obj_scale = 1;
@@ -55,6 +62,7 @@ struct Settings
 	std::string root_path;	// root directory of current solution
 
 	MESH_FILE	File;	// file name of 3d mesh, read from Settings.csv
+	REMESHING	Remeshing;
 	STITCH		Stitch;
 	VIEWER		Viewer;
 	SKEL_OUT	Skel_out;

@@ -26,7 +26,7 @@ size_t          print_to = 1;      // 0...print to console, 1...output to gui
 /// <summary>
 /// process_nr = 
 /// 0...Reset
-/// 1...Load Settings
+/// 1...Load Settings (|| isotropic Remeshing)
 /// 2...Load Mesh File
 /// 3...extract skeleton
 /// 4...segmentation
@@ -42,9 +42,12 @@ GuiConsole*     gui_console = NULL;
 
 Mesh*           mesh = NULL;
 Triangle_mesh*  tmesh = NULL;
+Polyhedron*     pmesh = NULL;
 
 Skel*           skel = NULL;
 SkelGraph*      skel_graph = NULL;
+
+Segmentation*   segments = NULL;
 
 void init()
 {
@@ -56,6 +59,7 @@ void init()
 
     skel = new Skel();
     skel_graph = new SkelGraph();
+    segments = new Segmentation();
 }
 
 void clear()
@@ -67,6 +71,7 @@ void clear()
     delete mesh;
     delete skel_graph;
     delete skel;
+    delete segments;
 
     display     = NULL;
     settings    = NULL;
@@ -74,8 +79,10 @@ void clear()
 
     mesh        = NULL;
     tmesh       = NULL;
+    pmesh       = NULL;
     skel        = NULL;
     skel_graph  = NULL;
+    segments    = NULL;
 }
 
 int main(int argc, char *argv[])

@@ -119,7 +119,7 @@ private:
 	/// iterator_1: process_nr --- [0...5]	  --- reference "process_nr" in main.cpp
 	/// iterator_2: geo_nr     --- [0...Inf.] --- geometry number in current process_nr
 	/// </summary>
-	std::vector<std::vector<std::string>> geo_names;
+	//std::vector<std::vector<std::string>> geo_names;
 	std::vector<IglGeometry> igl_geoms;	// index start from 0
 	IGL_Viewer viewer;
 	IGL_Gui    gui;
@@ -133,6 +133,7 @@ private:
 
 	void insert_skel_graph(SkelGraph& skel_graph);
 	void insert_tmesh(Triangle_mesh& tmesh);
+	void insert_pmesh(Polyhedron& pmesh);
 	void insert_skeleton(Skeleton& skeleton);
 	void insert_skel(Skel& skel);
 	void insert_segmentation(Segmentation& segmentation);
@@ -233,6 +234,10 @@ public:
 	inline void insert(Triangle_mesh& tmesh)// display triangle mesh
 	{
 		this->insert_tmesh(tmesh);
+	}
+	inline void insert(Polyhedron& pmesh)// display triangle mesh
+	{
+		this->insert_pmesh(pmesh);
 	}
 	inline void insert(Skel& skel)			// 
 	{

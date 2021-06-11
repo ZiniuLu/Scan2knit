@@ -413,6 +413,117 @@ void GuiControl::Draw(const char* title, bool* p_open)
             
         }
 
+        if (ImGui::Button("Isotropic Remeshing", ImVec2(-1, 0)))
+        {
+            Print("\n");
+            Print("[Button] Isotropic Remeshing");
+            extern size_t process_nr;
+            if (process_nr >= 3)
+            {
+                Print("Please click \"Reset\" first!");
+            }
+            if (process_nr <= 0)
+            {
+                Print("Please load settings first!");
+            }
+            else if(process_nr == 1)
+            {
+                extern bool settings_loaded;
+                if (settings_loaded)
+                {
+                    extern Settings* settings;  
+                    std::ostringstream t1;
+                    t1 << "\tRemeshing " << settings->Remeshing.remeshing_out_suffix << " ...";
+                    Print(t1.str());
+                    std::ostringstream t2;
+                    t2 << "\t - target_edge_length = " << settings->Remeshing.remeshing_edge_length << "\n"
+                        << "\t - number of iterations = " << settings->Remeshing.remeshing_nr_iter;
+                    Print(t2.str());
+
+                    
+                    std::string in_name = settings->File.name;
+                    std::string in_path = settings->root_path + settings->File.folder_path + in_name;
+                    size_t idx_dot = in_path.rfind('.');
+
+                    std::string out_path = in_path.substr(0, idx_dot);
+                    size_t idx_seg = out_path.rfind("_res");
+                    if (idx_seg != out_path.npos) { out_path = out_path.substr(0, idx_seg); }
+                    out_path += settings->Remeshing.remeshing_out_suffix;
+
+                    MeshFile::isotropic_remeshing(in_path, out_path,
+                        settings->Remeshing.remeshing_edge_length, settings->Remeshing.remeshing_nr_iter);
+
+                    settings->File.name = in_name.substr(0, in_name.rfind('.')) + settings->Remeshing.remeshing_out_suffix;
+                    Print("\tdone.");
+                }
+            }
+            else if (process_nr == 2)
+            {
+                extern Mesh* mesh;
+                extern Display* display;
+                extern Settings* settings;
+
+                // reset loaded mesh -- similar to Reset
+                Print("\tRemoving current loaded mesh.\n");
+
+                process_nr = 1;
+                delete mesh;
+                mesh = NULL;
+                mesh = new Mesh();
+                display->erase(process_nr);
+                Print("\tdone.");
+                
+                // isotropic remeshing -- same as process_nr == 1
+                std::ostringstream t1;
+                t1 << "\tRemeshing " << settings->Remeshing.remeshing_out_suffix << " ...";
+                Print(t1.str());
+                std::ostringstream t2;
+                t2 << "\t - target_edge_length = " << settings->Remeshing.remeshing_edge_length << "\n"
+                    << "\t - number of iterations = " << settings->Remeshing.remeshing_nr_iter;
+                Print(t2.str());
+
+                std::string in_name = settings->File.name;
+                std::string in_path = settings->root_path + settings->File.folder_path + in_name;
+                size_t idx_dot = in_path.rfind('.');
+
+                std::string out_path = in_path.substr(0, idx_dot);
+                size_t idx_seg = out_path.rfind("_res");
+                if (idx_seg != out_path.npos) { out_path = out_path.substr(0, idx_seg); }
+                out_path += settings->Remeshing.remeshing_out_suffix;
+
+                MeshFile::isotropic_remeshing(in_path, out_path,
+                    settings->Remeshing.remeshing_edge_length, settings->Remeshing.remeshing_nr_iter);
+
+                settings->File.name = in_name.substr(0, in_name.rfind('.')) + settings->Remeshing.remeshing_out_suffix;
+                Print("\tdone.");
+                
+                // reload mesh file -- same as Load Mesh File
+                
+                Print("\tLoading mesh file ... ");
+                std::string path = settings->root_path + settings->File.folder_path + settings->File.name;
+                mesh->load(path);
+
+                if (mesh->is_triangle_mesh())
+                {
+                    extern bool is_triangle_mesh;
+                    //extern Triangle_mesh* tmesh; 
+                    extern Polyhedron* pmesh;
+                    extern Display* display;
+
+                    is_triangle_mesh = true;
+                    process_nr = 2;
+
+                    //tmesh = &(mesh->get_tmesh());
+                    pmesh = &(mesh->get_pmesh());
+
+                    display->insert(*pmesh);
+                    display->update();
+                }
+
+                Print("\tdone.");
+            }
+        }
+
         if (ImGui::Button("Load Mesh File   ", ImVec2(-1, 0)))
         {
             Print("\n");
@@ -448,15 +559,17 @@ void GuiControl::Draw(const char* title, bool* p_open)
                     if (mesh->is_triangle_mesh())
                     {
                         extern bool is_triangle_mesh;
-                        extern Triangle_mesh* tmesh; 
+                        //extern Triangle_mesh* tmesh; 
+                        extern Polyhedron* pmesh; 
                         extern Display* display;
 
                         is_triangle_mesh = true;
                         process_nr = 2;
 
-                        tmesh = &(mesh->get_tmesh());
+                        //tmesh = &(mesh->get_tmesh());
+                        pmesh = &(mesh->get_pmesh());
 
-                        display->insert(*tmesh);
+                        display->insert(*pmesh);
                         display->update();
                     }
 
@@ -525,10 +638,55 @@ void GuiControl::Draw(const char* title, bool* p_open)
             }
         }
 
-        if (ImGui::Button("Analyse Structure", ImVec2(-1, 0)))
+        if (ImGui::Button("Extract Segmentation", ImVec2(-1, 0)))
         {
-            Print("[Button] Analyse Structure");
-            Print("(to do)");
+            Print("[Button] Extract Segmentation");
+
+            extern size_t process_nr;
+
+            switch (process_nr)
+            {
+            case 0:
+            {
+                Print("Please load settings first!");
+                break;
+            }
+            case 1:
+            {
+                Print("Please load mesh file first!");
+                break;
+            }
+            case 2:
+            {
+                Print("Please extract skeleton first!");
+                break;
+            }
+            case 3:
+            {
+                extern Settings* settings;
+                extern Segmentation* segments;
+                extern Skel* skel;
+                extern Polyhedron* pmesh;
+
+                Skeleton& skeleton = skel->get_skeleton();
+                segments->extract_to_end(skeleton, *pmesh);
+                process_nr = 4;
+                break;
+            }
+            case 4:
+            {
+                Print("\tRe-caculating segments ... ");
+                Print("\t\tclear all existing segments ... ");
+                Print("(to do)");
+                Print("\t\tdone");
+            }
+            default:
+            {
+                Print("\tPlease .............. ");
+            }
+            }
+
+            
         }
     } // group "skeletonization"
 
@@ -1020,10 +1178,10 @@ void Display::insert_tmesh(Triangle_mesh& tmesh)
 
     // add facets
     size_t f_i = 0;
-    for (const face_descriptor& fd : tmesh.faces())
+    for (const auto& fd : tmesh.faces())
     {
         size_t axis = 0;
-        for (const vertex_descriptor& vd : CGAL::vertices_around_face(tmesh.halfedge(fd), tmesh))
+        for (const auto& vd : CGAL::vertices_around_face(tmesh.halfedge(fd), tmesh))
         {
             my_F(f_i, axis) = vd;
             ++axis;
@@ -1042,6 +1200,57 @@ void Display::insert_tmesh(Triangle_mesh& tmesh)
     my_geom.color_E = IglColor::white();
     this->insert_geometry(my_geom);
 }
+void Display::insert_pmesh(Polyhedron& pmesh)
+{
+    Print("(to do)");
+
+    int numV = pmesh.size_of_vertices();
+    int numF = pmesh.size_of_facets();
+
+    MAT_3d my_V;
+    MAT_3i my_F;
+
+    my_V.resize(numV, 3);
+    my_F.resize(numF, 3);
+
+    CGAL::set_halfedgeds_items_id(pmesh);
+
+    // add vertices
+    size_t v_i = 0;
+    
+    auto it_pv_begin = pmesh.vertices_begin();
+    auto it_pv_end = pmesh.vertices_end();
+    auto it_pv = it_pv_begin;
+
+    for (; it_pv != it_pv_end; ++it_pv)
+    {
+        const Point& p = it_pv->point();
+        my_V.row(v_i) << p.x(), p.y(), p.z();
+        ++v_i;
+    }
+
+    // add facets
+    size_t f_i = 0;
+
+    for (p_face_descriptor fd : faces(pmesh))
+    {
+        size_t axis = 0;
+        for (p_vertex_descriptor vd  : CGAL::vertices_around_face(halfedge(fd, pmesh), pmesh))
+        {
+            my_F(f_i, axis) = vd->id();
+            ++axis;
+        }
+        //std::cout << "\nface: " << my_F.row(f_i) << "\t" << std::endl;
+        ++f_i;
+    }
+
+    size_t id = this->igl_geoms.size();
+
+    IglGeometry my_geom("mesh", id, my_V, my_F, IglColor::white(), IglColor::yellow());
+    my_geom.color_E = IglColor::white();
+    this->insert_geometry(my_geom);
+}
+
 void Display::insert_skeleton(Skeleton& skeleton)
 {
     auto& my_nodes = skeleton.m_vertices;  // skeleton nodes with associated mesh vertices

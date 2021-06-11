@@ -16,7 +16,8 @@ class MeshFile
 {
 private:
 	std::vector<std::string> filePath; // fileDir + fileName + fileType
-	std::ifstream			 input;
+	std::ifstream			 input1;
+	std::ifstream			 input2;
 	bool					 isOpen = false;
 
 public:
@@ -27,7 +28,10 @@ public:
 
 	const bool						is_open() const;
 	const std::vector<std::string>& get_file_path() const;
-	std::ifstream&					get_ifstream();
+	std::ifstream&					get_ifstream1();
+	std::ifstream&					get_ifstream2();
+
+	static int isotropic_remeshing(std::string& in_path, std::string& out_path, double edge_length, size_t nb_iter);
 };
 
 class Mesh
@@ -36,6 +40,7 @@ private:
 	v_string	  filePath;	// path, filename, suffix
 	bool		  is_tmesh = false;
 	Triangle_mesh tmesh;
+	Polyhedron	  pmesh;
 
 public:
 	Mesh();
@@ -46,8 +51,9 @@ public:
 	bool load_mesh_file(MeshFile& meshFile);
 	bool is_triangle_mesh();
 
-	Triangle_mesh& get_tmesh();
-	v_string&	   get_file_path();
+	Triangle_mesh&	get_tmesh();
+	Polyhedron&		get_pmesh();
+	v_string&		get_file_path();
 
 private:
 	bool load_obj(MeshFile& meshFile);

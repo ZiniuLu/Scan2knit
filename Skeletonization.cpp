@@ -121,8 +121,9 @@ bool      Skel::extract_to_end(Mesh& mesh)
 
     // 1. extract skeleton;
     Print("\tExtracting mean curvature flow skeletons ... ");
-    auto& tmesh = mesh.get_tmesh();
-    CGAL::extract_mean_curvature_flow_skeleton(tmesh, this->skeleton); // caculate object skeleton
+    //auto& tmesh = mesh.get_tmesh();
+    auto& pmesh = mesh.get_pmesh();
+    CGAL::extract_mean_curvature_flow_skeleton(pmesh, this->skeleton); // caculate object skeleton
 
     // 3. caculate V & E numbers
     size_t numV_skel = boost::num_vertices(this->skeleton);
@@ -132,12 +133,21 @@ bool      Skel::extract_to_end(Mesh& mesh)
     text << "\t\t\tnumber of vertices: \t" << numV_skel << "\n"
         << "\t\t\tnumber of edges: \t" << numE_skel;
     Print(text.str());
+
+    this->output_skel_polylines();
 }
 
 v_string& Skel::get_file_path() { return this->filePath; }
 Skeleton& Skel::get_skeleton() { return this->skeleton; }
 
 
+void      Skel::output_skel_polylines()
+{
+    std::ofstream output("../data/split.obj");
+    Display_polylines display(this->skeleton, output);
+    CGAL::split_graph_into_polylines(skeleton, display);
+    output.close();
+}
 
 
 // SkelGraph::
@@ -149,13 +159,14 @@ SkelGraph::SkelGraph(Skel& skel, Mesh& mesh)
 
     // build skel graph
     Skeleton& mcf_skel = skel.get_skeleton();
-    Triangle_mesh& tmesh = mesh.get_tmesh();
-    this->set_skel_graph(mcf_skel, tmesh);
+    //Triangle_mesh& tmesh = mesh.get_tmesh();
+    Polyhedron& pmesh = mesh.get_pmesh();
+    this->set_skel_graph(mcf_skel, pmesh);
 }
 
 // public
 // create skel graph
-void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel, const Triangle_mesh& tmesh)
+void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel, const Polyhedron& pmesh)
 {
     // point in skeleton -> called "node"
     // point in mesh     -> called "vertex"
@@ -208,7 +219,7 @@ void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel,
     };
 
     // 4. insert mapping lists of skeleton nodes and corresponding surface vertices
-    auto set_skel_maps = [&skel_nds](const Skeleton& skel, const Triangle_mesh& tmesh)
+    auto set_skel_maps = [&skel_nds](const Skeleton& skel, const Polyhedron& pmesh)
     {
         auto& my_nodes = skel.m_vertices;
 
@@ -227,7 +238,7 @@ void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel,
 
             for (const auto& vd : it_nd->m_property.vertices)
             {
-                const Point& v_map = get(CGAL::vertex_point, tmesh, vd);
+                const Point& v_map = get(CGAL::vertex_point, pmesh, vd);
                 mapping_v_set.push_back(v_map);
             }
 
@@ -346,7 +357,7 @@ void                         SkelGraph::set_skel_graph(const Skeleton& mcf_skel,
 
     set_skel_nodes(mcf_skel);       // 2.
     set_skel_edges(mcf_skel);       // 3.
-    set_skel_maps(mcf_skel, tmesh); // 4.
+    set_skel_maps(mcf_skel, pmesh); // 4.
 
     // 5. find top_node and intersection_node in current skel
     analyse_skel_strucure();
@@ -372,40 +383,40 @@ size_t                       SkelGraph::get_root_node_number()
     return this->root_node_number;
 }
 
-double                       SkelGraph::get_segment_distance(const std::vector<size_t>& skel_segment) const
-{
-    double distance = 0;
-
-    auto it_begin = skel_segment.begin();
-    auto it_end   = skel_segment.end();
-    auto it       = it_begin;
-
-    for (; it + 1 != it_end; ++it)
-    {
-        size_t s = *it;
-        size_t t = *(it + 1);
-        distance += get_node_distance(s, t);
-    }
-
-    return distance;
-}
-double                       SkelGraph::get_edge_distance(const std::vector<SkelEdge>::iterator& it_eg) const
-{
-    size_t nd_nr_1 = (*it_eg).source();
-    size_t nd_nr_2 = (*it_eg).target();
-    return get_node_distance(nd_nr_1, nd_nr_2);
-}
-double                       SkelGraph::get_node_distance(const size_t nd_nr_1, const size_t nd_nr_2) const
-{
-    const SkelNode& nd1 = get_skel_node(nd_nr_1);
-    const SkelNode& nd2 = get_skel_node(nd_nr_2);
-    return get_node_distance(nd1, nd2);
-}
-double                       SkelGraph::get_node_distance(const SkelNode& nd1, const SkelNode& nd2) const
-{
-    Vector_3 v(nd1.point(), nd2.point());
-    return std::sqrt(v.squared_length());
-}
+//double                       SkelGraph::get_segment_length(const std::vector<size_t>& skel_segment) const
+//{
+//    double distance = 0;
+//
+//    auto it_begin = skel_segment.begin();
+//    auto it_end   = skel_segment.end();
+//    auto it       = it_begin;
+//
+//    for (; it + 1 != it_end; ++it)
+//    {
+//        size_t s = *it;
+//        size_t t = *(it + 1);
+//        distance += get_node_length(s, t);
+//    }
+//
+//    return distance;
+//}
+//double                       SkelGraph::get_edge_length(const std::vector<SkelEdge>::iterator& it_eg) const
+//{
+//    size_t nd_nr_1 = (*it_eg).source();
+//    size_t nd_nr_2 = (*it_eg).target();
+//    return get_node_length(nd_nr_1, nd_nr_2);
+//}
+//double                       SkelGraph::get_node_length(const size_t nd_nr_1, const size_t nd_nr_2) const
+//{
+//    const SkelNode& nd1 = get_skel_node(nd_nr_1);
+//    const SkelNode& nd2 = get_skel_node(nd_nr_2);
+//    return get_node_length(nd1, nd2);
+//}
+//double                       SkelGraph::get_node_length(const SkelNode& nd1, const SkelNode& nd2) const
+//{
+//    Vector_3 v(nd1.point(), nd2.point());
+//    return std::sqrt(v.squared_length());
+//}
 
 // output skel relevant info to files
 void                         SkelGraph::output_skel_graph_to_files(Settings* settings)
