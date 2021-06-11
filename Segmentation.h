@@ -13,7 +13,9 @@ class Segmentation
 {
 public:
 	Segmentation();
-	Segmentation(Skeleton& skeleton, Triangle_mesh& tmesh);
+	Segmentation(Skeleton& skeleton, Polyhedron& pmesh);
+
+	bool extract_to_end(Skeleton& skeleton, Polyhedron& pmesh);
 };
 
 END_PROJECT_NAMESPACE
