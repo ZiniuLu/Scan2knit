@@ -2,7 +2,7 @@
 folder_path,data/
 file_name,Y1.off
 
-####,REMESING
+####,REMESHING
 remeshing_edge_length,6
 remeshing_nr_iter,0.1		# number of iterations
 remeshing_out_suffix,_rem.off
