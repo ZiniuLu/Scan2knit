@@ -1,10 +1,10 @@
 ####,INPUT
 folder_path,data/
-file_name,hand3.off
+file_name,Y1.off
 
 ####,REMESING
-remeshing_edge_length,5
-remeshing_nr_iter,3		# number of iterations
+remeshing_edge_length,6
+remeshing_nr_iter,0.1		# number of iterations
 remeshing_out_suffix,_rem.off
 ,
 ####,STITCH
@@ -33,4 +33,4 @@ out_file_suffix,.obj
 out_suffix_skel,_skel
 out_suffix_skel_map,_skel_map
 out_suffix_skel_ext,_skel_ext
-#out_suffix_seg,_seg
+out_suffix_seg,_seg
