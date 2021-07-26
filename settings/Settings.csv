@@ -2,7 +2,7 @@
 folder_path,data/
 file_name,hand3.off
 
-####,REMESING
+####,REMESHING
 remeshing_edge_length,5
 remeshing_nr_iter,3		# number of iterations
 remeshing_out_suffix,_rem.off
