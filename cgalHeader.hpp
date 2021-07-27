@@ -12,12 +12,19 @@
 
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Polyhedron_items_with_id_3.h>
+#include <CGAL/boost/graph/Face_filtered_graph.h>
 
 // for isotropic remeshing
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Polygon_mesh_processing/remesh.h>
 #include <CGAL/Polygon_mesh_processing/border.h>
 #include <boost/iterator/function_output_iterator.hpp>
+
+// for transforming
+#include <CGAL/Aff_transformation_3.h>
+#include <CGAL/aff_transformation_tags.h>
+#include <CGAL/polygon_mesh_processing.h>
+#include <CGAL/Polyhedron_incremental_builder_3.h>
 
 // for skeletonization & segmentation
 typedef CGAL::Simple_cartesian<double>									Kernel; 
@@ -51,29 +58,13 @@ typedef CGAL::Surface_mesh<K::Point_3>                                  r_Mesh;
 typedef boost::graph_traits<r_Mesh>::halfedge_descriptor                r_halfedge_descriptor;
 typedef boost::graph_traits<r_Mesh>::edge_descriptor                    r_edge_descriptor;
 
+// for segmentation
+namespace PMP = CGAL::Polygon_mesh_processing;
+//typedef CGAL::Face_filtered_graph<Polyhedron> Filtered_graph;
+typedef Kernel::Aff_transformation_3 Transform;
 
 
 
-// Property map associating a facet with an integer as id to an
-// element in a vector stored internally
-template<class ValueType>
-struct Facet_with_id_pmap : public boost::put_get_helper<ValueType&, Facet_with_id_pmap<ValueType> >
-{
-    typedef p_face_descriptor               key_type;
-    typedef ValueType                       value_type;
-    typedef value_type&                     reference;
-    typedef boost::lvalue_property_map_tag  category;
-
-    Facet_with_id_pmap(std::vector<ValueType>& internal_vector) : internal_vector(internal_vector) { }
-
-    reference operator[](key_type key) const
-    {
-        return internal_vector[key->id()];
-    }
-
-private:
-    std::vector<ValueType>& internal_vector;
-};
 
 struct halfedge2edge
 {
@@ -86,4 +77,33 @@ struct halfedge2edge
     }
     const r_Mesh& m_mesh;
     std::vector<r_edge_descriptor>& m_edges;
+};
+
+
+
+
+// Property map associating a facet with an integer as id to an
+// element in a vector stored internally
+template<class ValueType>
+struct Facet_with_id_pmap : public boost::put_get_helper<ValueType&, Facet_with_id_pmap<ValueType> >
+{
+    typedef p_face_descriptor               key_type;
+    typedef ValueType                       value_type;
+    typedef value_type& reference;
+    typedef boost::lvalue_property_map_tag  category;
+
+    Facet_with_id_pmap(std::vector<ValueType>& internal_vector) : internal_vector(internal_vector) { }
+
+    reference operator[](key_type key) const
+    {
+        return this->internal_vector[key->id()];
+    }
+
+    inline std::vector<ValueType>& get() const
+    {
+        return this->internal_vector;
+    }
+
+private:
+    std::vector<ValueType>& internal_vector;
 };
