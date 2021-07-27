@@ -47,12 +47,6 @@ struct GuiConsole
 	int          TextEditCallback(ImGuiInputTextCallbackData* data);
 };
 
-//class Console
-//{
-//public:
-//	
-//};
-
 END_PROJECT_NAMESPACE
 
 void Print(const std::string& text);

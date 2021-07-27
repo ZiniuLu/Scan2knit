@@ -14,8 +14,11 @@
 #include <imgui/imgui.h>
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, 3> MAT_3d;
+typedef Eigen::Matrix<int, Eigen::Dynamic, 6>	 MAT_6i;
+typedef Eigen::Matrix<int, Eigen::Dynamic, 4>	 MAT_4i;
 typedef Eigen::Matrix<int, Eigen::Dynamic, 3>	 MAT_3i;
 typedef Eigen::Matrix<int, Eigen::Dynamic, 2>	 MAT_2i;
+typedef Eigen::Matrix<int, Eigen::Dynamic, 1>	 MAT_1i;
 
 typedef Eigen::RowVector3d						 RVec_3d;
 typedef Eigen::RowVector2i						 RVec_2i;

@@ -13,12 +13,13 @@
 #include "Settings.h"
 #include "MeshFile.h"
 #include "Skeletonization.h"
+#include "Segmentation.h"
 #include "Display.h"
 
 using namespace PROJECT_NAME;
 
 /// <summary>
-/// output = 
+/// print_to = 
 /// 0...output to console
 /// 1...output to gui
 /// </summary>
@@ -46,20 +47,20 @@ Polyhedron*     pmesh = NULL;
 
 Skel*           skel = NULL;
 SkelGraph*      skel_graph = NULL;
-
-Segmentation*   segments = NULL;
+Segmentation*   segmentation = NULL;
 
 void init()
 {
-    display = new Display();
-    settings = new Settings();
-    gui_console = new GuiConsole();
+    display      = new Display();
+    settings     = new Settings();
+    gui_console  = new GuiConsole();
 
-    mesh = new Mesh();
+    mesh         = new Mesh();
 
-    skel = new Skel();
-    skel_graph = new SkelGraph();
-    segments = new Segmentation();
+    skel         = new Skel();
+    skel_graph   = new SkelGraph();
+    segmentation = new Segmentation();
+    
 }
 
 void clear()
@@ -71,18 +72,18 @@ void clear()
     delete mesh;
     delete skel_graph;
     delete skel;
-    delete segments;
+    delete segmentation;
 
-    display     = NULL;
-    settings    = NULL;
-    gui_console = NULL;
+    display      = NULL;
+    settings     = NULL;
+    gui_console  = NULL;
 
-    mesh        = NULL;
-    tmesh       = NULL;
-    pmesh       = NULL;
-    skel        = NULL;
-    skel_graph  = NULL;
-    segments    = NULL;
+    mesh         = NULL;
+    tmesh        = NULL;
+    pmesh        = NULL;
+    skel         = NULL;
+    skel_graph   = NULL;
+    segmentation = NULL;
 }
 
 int main(int argc, char *argv[])
@@ -96,40 +97,3 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-
-//{
-    // 1. get parameters from Settings.csv
-    //settings.load();
-    //if (!settings.loaded)
-    //{
-    //    std::cout << "Cannot find file name in Settings.csv !" << std::endl;
-    //    return EXIT_SUCCESS;
-    //}
-    //
-    //Display display;
-    //display.display_default();
-    //
-    //// 2. open mesh file
-    //std::string file = settings.root_path + settings.File.folder_path + settings.File.name;
-    //Mesh mesh(file);
-    //if (!mesh.is_triangle_mesh()) 
-    //{ 
-    //    return EXIT_FAILURE; 
-    //}
-    //
-    //// 3. skeletonization
-    //Skel skel(mesh);
-    ////Skeleton& skeleton = skel.get_skeleton();
-    ////Triangle_mesh& tmesh = mesh.get_tmesh();
-    //SkelGraph skel_graph(skel, mesh);
-    //skel_graph.output_skel_to_files();
-    //
-    //// 4. segmentation
-    ////Segmentation segmentation(skeleton, tmesh);
-    //
-    ////Display display;
-    //display.insert(mesh.get_tmesh());
-    //display.insert(skel_graph);
-    //display.display();
-    ////display.display("../data/teddy.off"); 
-//}

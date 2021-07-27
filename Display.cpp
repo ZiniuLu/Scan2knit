@@ -12,139 +12,6 @@
 
 BEGIN_PROJECT_NAMESPACE
 
-// IglColor::
-RVec_3d IglColor::rgb(uchar r, uchar g, uchar b)
-{
-    return RVec_3d(r / 256, g / 256, b / 256);
-}
-
-RVec_3d IglColor::black()   { return RVec_3d(0, 0, 0); }
-RVec_3d IglColor::white()   { return RVec_3d(1, 1, 1); }
-RVec_3d IglColor::red()     { return RVec_3d(1, 0, 0); }
-RVec_3d IglColor::lime()    { return RVec_3d(0, 1, 0); }
-RVec_3d IglColor::blue()    { return RVec_3d(0, 0, 1); }
-RVec_3d IglColor::yellow()  { return RVec_3d(1, 1, 0); }
-RVec_3d IglColor::cyan()    { return RVec_3d(0, 1, 1); }
-RVec_3d IglColor::magenta() { return RVec_3d(1, 0, 1); }
-RVec_3d IglColor::silver()  { return RVec_3d(0.75, 0.75, 0.75); }
-RVec_3d IglColor::gray()    { return RVec_3d(0.5, 0.5, 0.5); }
-RVec_3d IglColor::maroon()  { return RVec_3d(0.5, 0, 0); }
-RVec_3d IglColor::olive()   { return RVec_3d(0.5, 0.5, 0); }
-RVec_3d IglColor::green()   { return RVec_3d(0, 0.5, 0); }
-RVec_3d IglColor::purple()  { return RVec_3d(0.5, 0, 0.5); }
-RVec_3d IglColor::teal()    { return RVec_3d(0, 0.5, 0.5); }
-RVec_3d IglColor::navy()    { return RVec_3d(0, 0, 0.5); }
-RVec_3d IglColor::random() { return RVec_3d::Random().array().pow(2); }
-MAT_3d IglColor::random(size_t row)
-{
-    MAT_3d color;
-    color.resize(row, 3);
-    for (size_t i = 0; i < row; ++i)
-    {
-        color.row(i) << RVec_3d::Random().array().pow(2);
-    }
-
-    return color;
-}
-
-
-
-
-// IglGeometry::
-void IglGeometry::get_colors_V(MAT_3d& colors_V)
-{
-    size_t numV = this->V.rows();
-    colors_V.resize(numV, 3);
-    size_t i = 0;
-    for (; i < numV; ++i)
-    {
-        colors_V.row(i) << this->color_V;
-    }
-}
-void IglGeometry::get_colors_E(MAT_3d& colors_E)
-{
-    size_t numE = this->E.rows();
-    colors_E.resize(numE, 3);
-    size_t i = 0;
-    for (; i < numE; ++i)
-    {
-        colors_E.row(i) << this->color_E;
-    }
-}
-void IglGeometry::get_colors_F(MAT_3d& colors_F)
-{
-    size_t numF = this->F.rows();
-    colors_F.resize(numF, 3);
-    size_t i = 0;
-    for (; i < numF; ++i)
-    {
-        colors_F.row(i) << this->color_F;
-    }
-}
-
-// Bound::
-void    Bound::set(std::vector<IglGeometry>& geoms)
-{
-    this->x_min = 0;
-    this->x_max = 0;
-    this->y_min = 0;
-    this->y_max = 0;
-    this->z_min = 0;
-    this->z_max = 0;
-
-    for (IglGeometry& geo : geoms)
-    {
-        MAT_3d& my_V = geo.V;
-        size_t numV = my_V.rows();
-        if (numV <= 0) { return; }
-
-        RVec_3d m = my_V.colwise().minCoeff();
-        RVec_3d M = my_V.colwise().maxCoeff();
-
-        this->x_min = m(0);
-        this->x_max = M(0);
-        this->y_min = m(1);
-        this->y_max = M(1);
-        this->z_min = m(2);
-        this->z_max = M(2);
-    }
-}
-void    Bound::get_bounding_box_V(MAT_3d& V)
-{
-    V.resize(8, 3);
-    V << this->x_min, this->y_min, this->z_min,
-        this->x_max, this->y_min, this->z_min,
-        this->x_max, this->y_max, this->z_min,
-        this->x_min, this->y_max, this->z_min,
-        this->x_min, this->y_min, this->z_max,
-        this->x_max, this->y_min, this->z_max,
-        this->x_max, this->y_max, this->z_max,
-        this->x_min, this->y_max, this->z_max;
-
-    //F <<0, 2, 1,
-    //    0, 3, 2,
-    //    0, 1, 5,
-    //    0, 5, 4,
-    //    0, 4, 7,
-    //    0, 7, 3,
-    //    6, 7, 4,
-    //    6, 4, 5,
-    //    6, 5, 1,
-    //    6, 1, 2,
-    //    6, 7, 3,
-    //    6, 2, 3;
-}
-RVec_3d Bound::get_xyz_size()
-{
-    return RVec_3d(
-        this->x_max - this->x_min,
-        this->y_max - this->y_min,
-        this->z_max - this->z_min);
-}
-
-
-
-
 //GuiDisplay::
 GuiDisplay::GuiDisplay(IGL_Viewer* p_viewer, IGL_Gui* p_gui, std::vector<IglGeometry>* p_geoms)
 {
@@ -153,12 +20,6 @@ GuiDisplay::GuiDisplay(IGL_Viewer* p_viewer, IGL_Gui* p_gui, std::vector<IglGeom
     this->viewer = p_viewer;
     this->gui = p_gui;
     this->geoms = p_geoms;
-}
-
-void GuiDisplay::Reset()
-{
-    this->viewer = NULL;
-    this->geoms = NULL;
 }
 
 void GuiDisplay::Draw(const char* title, bool* p_open)
@@ -263,7 +124,7 @@ void GuiDisplay::Draw(const char* title, bool* p_open)
                         RVec_3d color = IglColor::random();
                         geo.color_E.resize(rowE, 3);
 
-                        for (int row = 0; row < rowE; ++row)
+                        for (int row = 0; row < rowE; row++)
                         {
                             size_t my_v = geo.E(row, 0);
                             if (my_v != v)
@@ -313,18 +174,10 @@ void GuiDisplay::Draw(const char* title, bool* p_open)
     ImGui::End();
 }
 
-
-
-
 //GuiControl::
 GuiControl::GuiControl()
 {
     this->Reset();
-}
-
-void GuiControl::Reset()
-{
-
 }
 
 void GuiControl::Draw(const char* title, bool* p_open)
@@ -377,7 +230,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
     if (ImGui::CollapsingHeader("Load File", ImGuiTreeNodeFlags_DefaultOpen))
     {
 
-        if (ImGui::Button("Load Settings    ", ImVec2(-1, 0)))
+        if (ImGui::Button("Load Settings      ", ImVec2(-1, 0)))
         {
             Print("[Button] Load Settings");
 
@@ -524,7 +377,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
             }
         }
 
-        if (ImGui::Button("Load Mesh File   ", ImVec2(-1, 0)))
+        if (ImGui::Button("Load Mesh File     ", ImVec2(-1, 0)))
         {
             Print("\n");
             Print("[Button] Load Mesh File");
@@ -583,7 +436,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
     if (ImGui::CollapsingHeader("Skeletonization", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        if (ImGui::Button("Extract Skeleton ", ImVec2(-1, 0)))
+        if (ImGui::Button("Extract Skeleton   ", ImVec2(-1, 0)))
         {
             Print("\n");
             Print("[Button] Extract Skeleton");
@@ -598,20 +451,27 @@ void GuiControl::Draw(const char* title, bool* p_open)
                 extern Settings* settings;
                 extern Mesh* mesh;
                 extern Skel* skel;
+                extern SkelGraph* skel_graph;
 
                 skel->extract_to_end(*mesh);
 
-                SkelGraph skel_graph(*skel, *mesh);
-                skel_graph.output_skel_graph_to_files(settings);
+                if (skel_graph != NULL)
+                {
+                    delete skel_graph;
+                    skel_graph = NULL;
+                }
 
-                display->insert(skel_graph);
+                skel_graph = new SkelGraph(*skel, *mesh);
+                skel_graph->output_skel_graph_to_files(settings);
+
+                display->insert(*skel_graph);
                 display->update();
 
                 pro_nr = 3;
                 Print("\tdone.");
             };
 
-            if (process_nr > 3)
+            if (process_nr >= 4)
             {
                 Print("If you want to re-extract the skeleton, please click \"Reset\" first!");
             }
@@ -632,17 +492,36 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
                 ins_skels();
             }
-            else
+            else if (process_nr == 2)
             {
                 ins_skels();
             }
         }
 
-        if (ImGui::Button("Extract Segmentation", ImVec2(-1, 0)))
+        if (ImGui::Button("Extract Segments", ImVec2(-1, 0)))
         {
-            Print("[Button] Extract Segmentation");
+            Print("[Button] Extract Segments");
 
             extern size_t process_nr;
+            extern Display* display;
+
+            auto ins_segs = []()
+            {
+                extern Settings*     settings;
+                //extern Skel*         skel;
+                extern Polyhedron*   pmesh;
+                extern SkelGraph*    skel_graph;
+                extern Segmentation* segmentation;
+
+                //Skeleton& skeleton = skel->get_skeleton();
+                //std::string path = settings->root_path + settings->File.folder_path + settings->File.name;
+
+                segmentation->set_segments(*skel_graph, *pmesh);
+                display->insert(segmentation->get_segments());
+                display->update();
+
+                process_nr = 4;
+            };
 
             switch (process_nr)
             {
@@ -663,26 +542,27 @@ void GuiControl::Draw(const char* title, bool* p_open)
             }
             case 3:
             {
-                extern Settings* settings;
-                extern Segmentation* segments;
-                extern Skel* skel;
-                extern Polyhedron* pmesh;
+                Print("\tRe-caculating segments ... ");
 
-                Skeleton& skeleton = skel->get_skeleton();
-                segments->extract_to_end(skeleton, *pmesh);
-                process_nr = 4;
+                ins_segs();
+                
+                Print("\t\tdone");
                 break;
             }
             case 4:
             {
                 Print("\tRe-caculating segments ... ");
                 Print("\t\tclear all existing segments ... ");
-                Print("(to do)");
+                display->erase(process_nr);
+
+                ins_segs();
+
                 Print("\t\tdone");
+                break;
             }
             default:
             {
-                Print("\tPlease .............. ");
+                Print("\tPlease click \"Reset\" button first! ");
             }
             }
 
@@ -738,21 +618,36 @@ void GuiControl::Draw(const char* title, bool* p_open)
 // Display::
 Display::Display()                                  { }
 Display::Display(std::string path)                  { this->insert(path); }
-Display::Display(IglGeometry geom)                  { this->insert(geom); }
-Display::Display(MAT_3d& V, MAT_2i& E, MAT_3i& F)   { this->insert(V, E, F); }
-Display::Display(MAT_3d& V, MAT_3i& F)              { this->insert(V, F); }
-Display::Display(MAT_3d& V, MAT_2i& E)              { this->insert(V, E); }
+Display::Display(IglGeometry geometry)              { this->insert(geometry); }
+
 Display::Display(Triangle_mesh& tmesh)              { this->insert_tmesh(tmesh); }
 Display::Display(Skeleton& skeleton)                { this->insert_skeleton(skeleton); }
 Display::Display(Skel& skel)                        { this->insert_skel(skel); }
 Display::Display(SkelGraph& skel_graph)             { this->insert_skel_graph(skel_graph); }
+Display::Display(Segment& segment)                  { this->insert_segment(segment); }
+Display::Display(std::vector<Segment>& segments)    { this->insert_segments(segments); }
 Display::Display(Stitches& stitches)                { this->insert_stitches(stitches); }
 
+Display::Display(MAT_3d& V, MAT_2i& E, MAT_3i& F) { this->insert(V, E, F); }
+Display::Display(MAT_3d& V, MAT_3i& F) { this->insert(V, F); }
+Display::Display(MAT_3d& V, MAT_2i& E) { this->insert(V, E); }
+Display::Display(MAT_3d& V, MAT_2i& E, MAT_3i& F, RVec_3d color_V, RVec_3d color_E, RVec_3d color_F)
+{
+    this->insert(V, E, F, color_V, color_E, color_F);
+}
+Display::Display(MAT_3d& V, MAT_3i& F, RVec_3d color_V, RVec_3d color_F)
+{
+    this->insert(V, F, color_V, color_F);
+}
+Display::Display(MAT_3d& V, MAT_2i& E, RVec_3d color_V, RVec_3d color_E)
+{
+    this->insert(V, E, color_V, color_E);
+}
 
 // public
 void Display::erase(size_t& process_nr)
 {
-    std::string geo_names[] = { "mesh", "skel", "skel_ext", "skel_map" };
+    std::vector<std::string> key_names = { "mesh", "skel", "segment"};
     std::vector<size_t> idxs;
 
     switch (process_nr)
@@ -762,19 +657,22 @@ void Display::erase(size_t& process_nr)
         idxs.push_back(0);
         idxs.push_back(1);
         idxs.push_back(2);
-        idxs.push_back(3);
         break;
     }
     case 3: // erase skel x3
     {
         idxs.push_back(1);
         idxs.push_back(2);
-        idxs.push_back(3);
+        break;
+    }
+    case 4: // erase segment xN
+    {
+        idxs.push_back(2);
         break;
     }
     default:
     {
-        for (size_t i = 0; i < 4; ++i)
+        for (size_t i = 0; i < key_names.size(); i++)
         {
             idxs.push_back(i);
         }
@@ -784,7 +682,7 @@ void Display::erase(size_t& process_nr)
 
     for (size_t i : idxs)
     {
-        std::string& my_name = geo_names[i];
+        std::string& key_name = key_names[i];
 
         size_t offset = 0;
         while (true)
@@ -792,19 +690,21 @@ void Display::erase(size_t& process_nr)
             auto& geoms = this->igl_geoms;
 
             size_t numGeo = geoms.size();
-            if (offset == numGeo) { break; }
+            if (offset >= numGeo) { break; }
 
             auto it_geoms_begin = geoms.begin();
-            auto it_geoms_end = geoms.end();
-            auto it_geoms = it_geoms_begin + offset;
+            auto it_geoms_end   = geoms.end();
+            auto it_geoms       = it_geoms_begin + offset;
 
-            if (it_geoms->name == my_name)
+            std::string& geo_name = it_geoms->name;
+            auto pos = geo_name.find(key_name);
+            if (pos != geo_name.npos)
             {
                 geoms.erase(it_geoms);
             }
             else
             {
-                ++offset;
+                offset++;
             }
         } // while
     } // for
@@ -814,13 +714,6 @@ void Display::erase(size_t& process_nr)
     return;
 }
 
-void Display::launch()
-{
-    set_gui();
-    set_events();
-
-    viewer.launch(true, false, TO_STRING(PROJECT_NAME));
-}
 void Display::update()
 {
     size_t id_max = this->viewer.data_list.size() - 1;
@@ -888,7 +781,7 @@ void Display::update()
             this->viewer.data().set_colors(colors_V);
         }
 
-        ++idx;
+        idx++;
     }
 
     //this->viewer.data().show_overlay_depth = false;
@@ -909,10 +802,10 @@ void Display::insert_obj(std::string path)
     }
 
     std::string line = "";
-    std::vector<std::string> buf;
+    std::vector<std::string>         buf;
     std::vector<std::vector<double>> v;
-    std::vector<std::vector<int>> e;
-    std::vector<std::vector<int>> f;
+    std::vector<std::vector<int>>    e;
+    std::vector<std::vector<int>>    f;
     
     while (std::getline(input, line))
     {
@@ -1008,14 +901,14 @@ void Display::insert_obj(std::string path)
 void Display::insert_off(std::string path)
 {
     IglGeometry my_geom; 
-    my_geom.name = path.substr(path.rfind("/"));
-    my_geom.id = this->igl_geoms.size();
+    my_geom.name    = path.substr(path.rfind("/"));
+    my_geom.id      = this->igl_geoms.size();
 
     my_geom.color_V = IglColor::white();
     my_geom.color_F = IglColor::yellow();
 
-    MAT_3d& my_V = my_geom.V;
-    MAT_3i& my_F = my_geom.F;
+    MAT_3d& my_V    = my_geom.V;
+    MAT_3i& my_F    = my_geom.F;
 
     igl::readOFF(path, my_V, my_F);
     this->insert_geometry(my_geom);
@@ -1025,14 +918,14 @@ void Display::insert_stl(std::string path)
     std::ifstream input(path);
 
     IglGeometry my_geom;
-    my_geom.name = path.substr(path.rfind("/"));
-    my_geom.id = this->igl_geoms.size();
+    my_geom.name    = path.substr(path.rfind("/"));
+    my_geom.id      = this->igl_geoms.size();
 
     my_geom.color_V = IglColor::black();
     my_geom.color_F = IglColor::yellow();
 
-    MAT_3d& my_V = my_geom.V;
-    MAT_3i& my_F = my_geom.F;
+    MAT_3d& my_V    = my_geom.V;
+    MAT_3i& my_F    = my_geom.F;
     MAT_3d N;
 
     igl::readSTL(input, my_V, my_F, N);
@@ -1064,14 +957,14 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
 
             my_V.row(v_i) << p.x(), p.y(), p.z();
 
-            ++v_i;
+            v_i++;
         }
         size_t e_i = 0;
         for (SkelEdge eg : skel_edges)
         {
             my_E.row(e_i) << eg.source() - 1, eg.target() - 1;
 
-            ++e_i;
+            e_i++;
         }
 
         size_t id = this->igl_geoms.size();
@@ -1093,15 +986,15 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
 
         for (SkelExtn my_extn : skel_extns)
         {
-            const Point& top_node = my_extn.get_skel_node().point();
+            const Point& top_node   = my_extn.get_skel_node().point();
             const Point& extn_point = my_extn.get_extn_point();
 
-            my_V.row(v_i) << top_node.x(), top_node.y(), top_node.z();
+            my_V.row(v_i)     << top_node.x(),   top_node.y(),   top_node.z();
             my_V.row(v_i + 1) << extn_point.x(), extn_point.y(), extn_point.z();
-            my_E.row(e_i) << v_i, v_i + 1;
+            my_E.row(e_i)     << v_i,            v_i + 1;
 
             v_i += 2;
-            ++e_i;
+            e_i++;
         }
 
         size_t id = this->igl_geoms.size();
@@ -1122,7 +1015,7 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
 
         for (auto& my_nd : skel_nodes)
         {
-            auto& skel_p = my_nd.point();
+            auto& skel_p     = my_nd.point();
             auto& map_points = my_nd.get_mapping_vertices();
 
             numV += (map_points.size() + 1);
@@ -1135,15 +1028,16 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
 
             my_V.row(v_i) << skel_p.x(), skel_p.y(), skel_p.z();
             size_t i = v_i;
-            ++v_i;
+            v_i++;
             for (auto& map_p : map_points)
             {
-                my_V.row(v_i) << map_p.x(), map_p.y(), map_p.z();
-                my_E.row(e_i) << i, v_i;
+                auto& p = map_p.second;
+                my_V.row(v_i)    << p.x(), p.y(), p.z();
+                my_E.row(e_i)    << i,     v_i;
                 color_E.row(e_i) << my_color;
 
-                ++v_i;
-                ++e_i;
+                v_i++;
+                e_i++;
             }
         }
         
@@ -1173,7 +1067,7 @@ void Display::insert_tmesh(Triangle_mesh& tmesh)
     {
         const Point& p = tmesh.point(v);
         my_V.row(v_i) << p.x(), p.y(), p.z();
-        ++v_i;
+        v_i++;
     }
 
     // add facets
@@ -1184,14 +1078,14 @@ void Display::insert_tmesh(Triangle_mesh& tmesh)
         for (const auto& vd : CGAL::vertices_around_face(tmesh.halfedge(fd), tmesh))
         {
             my_F(f_i, axis) = vd;
-            ++axis;
+            axis++;
         }
         //std::cout << "face " << f_i << ": " 
         //          << (this->F)(f_i, 0) << "\t"
         //          << (this->F)(f_i, 1) << "\t"
         //          << (this->F)(f_i, 2) << "\t"
         //          << std::endl;
-        ++f_i;
+        f_i++;
     }
 
     size_t id = this->igl_geoms.size();
@@ -1202,47 +1096,9 @@ void Display::insert_tmesh(Triangle_mesh& tmesh)
 }
 void Display::insert_pmesh(Polyhedron& pmesh)
 {
-    Print("(to do)");
-
-    int numV = pmesh.size_of_vertices();
-    int numF = pmesh.size_of_facets();
-
     MAT_3d my_V;
     MAT_3i my_F;
-
-    my_V.resize(numV, 3);
-    my_F.resize(numF, 3);
-
-    CGAL::set_halfedgeds_items_id(pmesh);
-
-    // add vertices
-    size_t v_i = 0;
-    
-    auto it_pv_begin = pmesh.vertices_begin();
-    auto it_pv_end = pmesh.vertices_end();
-    auto it_pv = it_pv_begin;
-
-    for (; it_pv != it_pv_end; ++it_pv)
-    {
-        const Point& p = it_pv->point();
-        my_V.row(v_i) << p.x(), p.y(), p.z();
-        ++v_i;
-    }
-
-    // add facets
-    size_t f_i = 0;
-
-    for (p_face_descriptor fd : faces(pmesh))
-    {
-        size_t axis = 0;
-        for (p_vertex_descriptor vd  : CGAL::vertices_around_face(halfedge(fd, pmesh), pmesh))
-        {
-            my_F(f_i, axis) = vd->id();
-            ++axis;
-        }
-        //std::cout << "\nface: " << my_F.row(f_i) << "\t" << std::endl;
-        ++f_i;
-    }
+    Mesh::get_VF(my_V, my_F, pmesh);
 
     size_t id = this->igl_geoms.size();
 
@@ -1266,28 +1122,28 @@ void Display::insert_skeleton(Skeleton& skeleton)
     my_E.resize(numE, 2);
 
     auto it_nd_begin = my_nodes.begin();
-    auto it_nd_end = my_nodes.end();
-    auto it_nd = it_nd_begin;
+    auto it_nd_end   = my_nodes.end();
+    auto it_nd       = it_nd_begin;
 
     size_t v_i = 0;
-    for (; it_nd != it_nd_end; ++it_nd)
+    for (; it_nd != it_nd_end; it_nd++)
     {
         const Point& my_point = it_nd->m_property.point;
 
         my_V.row(v_i) << my_point.x(), my_point.y(), my_point.z();
 
-        ++v_i;
+        v_i++;
     }
 
     auto it_eg_begin = my_edges.begin();
-    auto it_eg_end = my_edges.end();
-    auto it_eg = it_eg_begin;
+    auto it_eg_end   = my_edges.end();
+    auto it_eg       = it_eg_begin;
 
     size_t e_i = 0;
-    for (; it_eg != it_eg_end; ++it_eg)
+    for (; it_eg != it_eg_end; it_eg++)
     {
         my_E.row(e_i) << it_eg->m_source, it_eg->m_target;
-        ++e_i;
+        e_i++;
     }
 
     size_t id = this->igl_geoms.size();
@@ -1299,6 +1155,24 @@ void Display::insert_skel(Skel& skel)
 {
     Skeleton& my_skeleton = skel.get_skeleton();
     this->insert_skeleton(my_skeleton);
+}
+void Display::insert_segment(Segment& segment)
+{
+    MAT_3d my_V = segment.get_V();
+    MAT_3i my_F = segment.get_F();
+    size_t id = this->igl_geoms.size();
+    std::ostringstream label;
+    label << "segment_" << segment.get_id();
+
+    IglGeometry my_geom(label.str(), id, my_V, my_F, IglColor::olive(), IglColor::random());
+    this->insert_geometry(my_geom);
+}
+void Display::insert_segments(std::vector<Segment>& segments)
+{
+    for (Segment& segment : segments)
+    {
+        this->insert_segment(segment);
+    }
 }
 
 void Display::insert_stitches(Stitches& stitches)
@@ -1352,7 +1226,7 @@ void Display::insert_stitches(Stitches& stitches, size_t pos, size_t len)
     auto it_last_stitch = it_line_begin;
 
 
-    for (; it_stitches != it_line_end; ++it_stitches)
+    for (; it_stitches != it_line_end; it_stitches++)
     {
         auto& idx_last = it_last_stitch->index;
         auto& idx = it_stitches->index;

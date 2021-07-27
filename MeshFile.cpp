@@ -53,7 +53,6 @@ const v_string& MeshFile::get_file_path() const { return this->filePath; }
 std::ifstream&	MeshFile::get_ifstream1() { return this->input1; }
 std::ifstream&	MeshFile::get_ifstream2() { return this->input2; }
 
-namespace PMP = CGAL::Polygon_mesh_processing;
 
 int MeshFile::isotropic_remeshing(std::string& in_path, std::string& out_path, double edge_length, size_t nb_iter)
 {
@@ -97,38 +96,50 @@ Mesh::Mesh(const std::string& filePath) { this->load(filePath); }
 Mesh::Mesh(MeshFile& meshFile) { this->load_mesh_file(meshFile); }
 
 // public
-bool			Mesh::load(const std::string& filePath)
+void	Mesh::get_VF(MAT_3d& V, MAT_3i& F, Triangle_mesh& tmesh, double scaling)
 {
-	MeshFile meshFile(filePath);
-	return this->load_mesh_file(meshFile);
+	// (to do)
 }
-bool			Mesh::load_mesh_file(MeshFile& meshFile)
+void	Mesh::get_VF(MAT_3d& V, MAT_3i& F, Polyhedron& pmesh, double scaling)
 {
-	this->filePath = meshFile.get_file_path();
+	get_pmesh(pmesh, scaling);
 
-	// build triangle mesh
-	const auto& suffix = this->filePath[2];
-	Print("\t\tfile format: " + suffix);
-	Print("\t\tAnalyzing triangle mesh ... ");
+	int numV = pmesh.size_of_vertices();
+	int numF = pmesh.size_of_facets();
 
-	bool loaded = false;
-	if (suffix == ".off") { loaded = this->load_off(meshFile); }
-	else if (suffix == ".obj") { loaded = this->load_obj(meshFile); }
-	else
+	V.resize(numV, 3);
+	F.resize(numF, 3);
+
+	CGAL::set_halfedgeds_items_id(pmesh);
+
+	// add vertices
+	size_t v_i = 0;
+
+	auto it_v_begin = pmesh.vertices_begin();
+	auto it_v_end	= pmesh.vertices_end();
+	auto it_v		= it_v_begin;
+
+	for (; it_v != it_v_end; it_v++)
 	{
-		Print("[error] Currently does not support \"" + this->filePath[2] + "\"!");
-		Print("[error] Please convert the file format to \".off\" or \".obj\" first!");
-		loaded = false;
+		const Point& p = it_v->point();
+		V.row(v_i) << p.x(), p.y(), p.z();
+		v_i++;
 	}
 
-	if (loaded) { Print("\t\tdone.\n"); }
-	return loaded;
+	// add facets
+	size_t f_i = 0;
+	for (p_face_descriptor fd : faces(pmesh))
+	{
+		size_t axis = 0;
+		for (p_vertex_descriptor vd : CGAL::vertices_around_face(halfedge(fd, pmesh), pmesh))
+		{
+			F(f_i, axis) = vd->id();
+			axis++;
+		}
+		//std::cout << "\nface: " << my_F.row(f_i) << "\t" << std::endl;
+		f_i++;
+	}
 }
-bool			Mesh::is_triangle_mesh() { return this->is_tmesh; }
-
-Triangle_mesh&	Mesh::get_tmesh() { return this->tmesh; }
-Polyhedron&		Mesh::get_pmesh() { return this->pmesh; }
-v_string&		Mesh::get_file_path() { return this->filePath; }
 
 // private
 bool Mesh::load_obj(MeshFile& meshFile)

@@ -6,6 +6,7 @@
 
 #include "project.h"
 #include "cgalHeader.hpp"
+#include "iglHeader.h"
 #include <vector>
 
 typedef std::vector<std::string> v_string;
@@ -47,14 +48,61 @@ public:
 	Mesh(const std::string& filePath);
 	Mesh(MeshFile& meshFile);
 
-	bool load(const std::string& filePath);
-	bool load_mesh_file(MeshFile& meshFile);
-	bool is_triangle_mesh();
+	inline bool load(const std::string& filePath)
+	{
+		MeshFile meshFile(filePath);
+		return this->load_mesh_file(meshFile);
+	}
+	inline bool load_mesh_file(MeshFile& meshFile)
+	{
+		this->filePath = meshFile.get_file_path();
 
-	Triangle_mesh&	get_tmesh();
-	Polyhedron&		get_pmesh();
-	v_string&		get_file_path();
+		// build triangle mesh
+		const auto& suffix = this->filePath[2];
+		Print("\t\tfile format: " + suffix);
+		Print("\t\tAnalyzing triangle mesh ... ");
 
+		bool loaded = false;
+		if (suffix == ".off") { loaded = this->load_off(meshFile); }
+		else if (suffix == ".obj") { loaded = this->load_obj(meshFile); }
+		else
+		{
+			Print("[error] Currently does not support \"" + this->filePath[2] + "\"!");
+			Print("[error] Please convert the file format to \".off\" or \".obj\" first!");
+			loaded = false;
+		}
+
+		if (loaded) { Print("\t\tdone.\n"); }
+		return loaded;
+	}
+
+	inline bool			is_triangle_mesh() { return this->is_tmesh; }
+	inline v_string&	get_file_path() { return this->filePath; }
+
+	inline Triangle_mesh&	get_tmesh() { return this->tmesh; }
+	inline Polyhedron&		get_pmesh() { return this->pmesh; }
+
+	static inline void		get_tmesh(Triangle_mesh& tmesh, double scaling)
+	{
+		PMP::transform(Transform(CGAL::SCALING, scaling), tmesh);
+	}
+	static inline void		get_pmesh(Polyhedron& pmesh, double scaling)
+	{ 
+		PMP::transform(Transform(CGAL::SCALING, scaling), pmesh);
+	}
+
+	static inline void		get_VF(MAT_3d& V, MAT_3i& F, Triangle_mesh& tmesh)
+	{
+		get_VF(V, F, tmesh, 1.0);
+	}
+	static inline void		get_VF(MAT_3d& V, MAT_3i& F, Polyhedron& pmesh)
+	{
+		get_VF(V, F, pmesh, 1.0);
+	}
+
+	static void				get_VF(MAT_3d& V, MAT_3i& F, Triangle_mesh& tmesh, double scaling);
+	static void				get_VF(MAT_3d& V, MAT_3i& F, Polyhedron& pmesh, double scaling);
+		
 private:
 	bool load_obj(MeshFile& meshFile);
 	bool load_off(MeshFile& meshFile);
