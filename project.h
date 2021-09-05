@@ -65,6 +65,7 @@ extern size_t print_to;
 /// 5...slicing
 /// </summary>
 extern size_t process_nr;
+extern PROJECT_NAME::GuiConsole* gui_console;
 
 void Print(const std::string& text);
 void Print(const std::string& text, size_t print_to);

@@ -385,6 +385,7 @@ END_PROJECT_NAMESPACE
 
 size_t print_to = 1;
 size_t process_nr = 0;
+PROJECT_NAME::GuiConsole* gui_console = NULL;
 
 void Print(const std::string& text)
 {
@@ -401,7 +402,7 @@ void Print(const std::string& text, size_t print_to)
     }
     else if (print_to)
     {
-        extern GuiConsole* gui_console;
+        //extern GuiConsole* gui_console;
 
         gui_console->AddLog(text.c_str());
     }

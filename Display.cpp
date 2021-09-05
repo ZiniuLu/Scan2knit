@@ -190,12 +190,12 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
     if (ImGui::Button("Reset            ", ImVec2(-1, 0)))
     {
-        extern size_t   process_nr;
+        //extern size_t   process_nr;
         extern bool     settings_loaded;
         extern bool     is_triangle_mesh;
 
         extern Settings* settings;
-        extern GuiConsole* gui_console;
+        //extern GuiConsole* gui_console;
 
         extern Mesh* mesh;
         extern Triangle_mesh* tmesh;
@@ -236,8 +236,8 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
             extern Settings* settings;
 
-            extern size_t print_to;
-            extern size_t process_nr;
+            //extern size_t print_to;
+            //extern size_t process_nr;
             extern bool   settings_loaded;
 
             if (process_nr == 0 && !settings_loaded)
@@ -270,7 +270,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
         {
             Print("\n");
             Print("[Button] Isotropic Remeshing");
-            extern size_t process_nr;
+            //extern size_t process_nr;
             if (process_nr >= 3)
             {
                 Print("Please click \"Reset\" first!");
@@ -383,7 +383,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
             Print("[Button] Load Mesh File");
 
             extern bool settings_loaded;
-            extern size_t process_nr;
+            //extern size_t process_nr;
 
             extern Settings* settings;
             extern Mesh* mesh;
@@ -502,7 +502,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
         {
             Print("[Button] Extract Segments");
 
-            extern size_t process_nr;
+            //extern size_t process_nr;
             extern Display* display;
 
             auto ins_segs = []()
@@ -1365,10 +1365,10 @@ void Display::set_gui()
     //Add content to current menu window
     my_gui.callback_draw_viewer_window = [&]()
     {
-        extern size_t print_to;
+        //extern size_t print_to;
         if (print_to == 1)
         {
-            extern GuiConsole* gui_console;
+            //extern GuiConsole* gui_console;
             //static GuiConsole& my_console = *gui_console;
             gui_console->Draw("Console", &show_gui_console);
         }

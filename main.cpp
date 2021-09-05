@@ -22,7 +22,7 @@ bool            is_triangle_mesh = false;
 
 Display*        display = NULL;
 Settings*       settings = NULL;
-GuiConsole*     gui_console = NULL;
+//GuiConsole*     gui_console = NULL;
 
 Mesh*           mesh = NULL;
 Triangle_mesh*  tmesh = NULL;
@@ -34,8 +34,12 @@ Segmentation*   segmentation = NULL;
 
 void init()
 {
-    extern size_t print_to;
-    extern size_t process_nr;
+    // declared in project.h
+    //extern size_t print_to;
+    //extern size_t process_nr;
+    //extern GuiConsole* gui_console;
+
+    // declared in 
 
     print_to     = 1;
     process_nr   = 0;
