@@ -939,7 +939,7 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
     const std::vector<SkelExtn>& skel_extns = skel_graph.get_skel_extns();
     
 
-    auto ins_skeleton = [&skel_nodes, &skel_edges, this]()
+    const auto ins_skeleton = [&skel_nodes, &skel_edges, this]()
     {
         size_t numV = skel_nodes.size();
         size_t numE = skel_edges.size();
@@ -970,7 +970,7 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
         size_t id = this->igl_geoms.size();
         return IglGeometry("skel", id, my_V, my_E, IglColor::yellow(), IglColor::yellow());
     };
-    auto ins_extension = [&skel_extns, this]()
+    const auto ins_extension = [&skel_extns, this]()
     {
         MAT_3d my_V;
         MAT_2i my_E;
@@ -1000,7 +1000,7 @@ void Display::insert_skel_graph(SkelGraph& skel_graph)
         size_t id = this->igl_geoms.size();
         return IglGeometry("skel_ext", id, my_V, my_E, IglColor::red(), IglColor::red());
     };
-    auto ins_map_p = [&skel_nodes, this]()
+    const auto ins_map_p = [&skel_nodes, this]()
     {
         MAT_3d my_V;
         MAT_2i my_E;
@@ -1234,8 +1234,8 @@ void Display::insert_stitches(Stitches& stitches, size_t pos, size_t len)
         if (idx == 0) { continue; }
         else
         {
-            auto& it_source = V.row(idx_last);
-            auto& it_target = V.row(idx);
+            const auto& it_source = V.row(idx_last);
+            const auto& it_target = V.row(idx);
 
             RVec_3d color_eg;
             if (it_last_stitch->direction == 'c' && it_stitches->direction == 'c')
@@ -1260,9 +1260,9 @@ void Display::insert_stitches(Stitches& stitches, size_t pos, size_t len)
         case 'i':
         {
             uint32_t in_0 = it_stitches->in_0;
-            auto& it_source = V.row(in_0);
-            auto& it_target = V.row(idx);
-            auto& color_eg = IglColor::green();
+            const auto& it_source = V.row(in_0);
+            const auto& it_target = V.row(idx);
+            const auto& color_eg = IglColor::green();
 
             viewer.data().add_edges(it_source, it_target, color_eg);
             //std::cout << "E " << in_0 << " -> " << idx << std::endl;
@@ -1274,10 +1274,10 @@ void Display::insert_stitches(Stitches& stitches, size_t pos, size_t len)
             uint32_t in_0 = it_stitches->in_0;
             uint32_t in_1 = it_stitches->in_1;
 
-            auto& it_source_0 = V.row(in_0);
-            auto& it_source_1 = V.row(in_1);
-            auto& it_target = V.row(idx);
-            auto& color_eg = IglColor::green();
+            const auto& it_source_0 = V.row(in_0);
+            const auto& it_source_1 = V.row(in_1);
+            const auto& it_target = V.row(idx);
+            const auto& color_eg = IglColor::green();
 
             viewer.data().add_edges(it_source_0, it_target, color_eg);
             viewer.data().add_edges(it_source_1, it_target, color_eg);
