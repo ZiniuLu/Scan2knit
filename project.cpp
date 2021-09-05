@@ -383,6 +383,9 @@ int   GuiConsole::TextEditCallback(ImGuiInputTextCallbackData* data)
 END_PROJECT_NAMESPACE
 
 
+size_t print_to = 1;
+size_t process_nr = 0;
+
 void Print(const std::string& text)
 {
     extern size_t print_to;

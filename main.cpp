@@ -2,7 +2,6 @@
  *     Author: Ziniu Lu (luziniuoskar@outlook.com)
  */
 #pragma once
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -18,22 +17,6 @@
 
 using namespace PROJECT_NAME;
 
-/// <summary>
-/// print_to = 
-/// 0...output to console
-/// 1...output to gui
-/// </summary>
-size_t          print_to = 1;      // 0...print to console, 1...output to gui
-/// <summary>
-/// process_nr = 
-/// 0...Reset
-/// 1...Load Settings (|| isotropic Remeshing)
-/// 2...Load Mesh File
-/// 3...extract skeleton
-/// 4...segmentation
-/// 5...slicing
-/// </summary>
-size_t          process_nr = 0;
 bool            settings_loaded = false;
 bool            is_triangle_mesh = false;
 
@@ -51,6 +34,11 @@ Segmentation*   segmentation = NULL;
 
 void init()
 {
+    extern size_t print_to;
+    extern size_t process_nr;
+
+    print_to     = 1;
+    process_nr   = 0;
     display      = new Display();
     settings     = new Settings();
     gui_console  = new GuiConsole();
@@ -60,7 +48,6 @@ void init()
     skel         = new Skel();
     skel_graph   = new SkelGraph();
     segmentation = new Segmentation();
-    
 }
 
 void clear()

@@ -49,5 +49,22 @@ struct GuiConsole
 
 END_PROJECT_NAMESPACE
 
+/// <summary>
+/// print_to = 
+/// 0...output to console
+/// 1...output to gui	-- default
+/// </summary>
+extern size_t print_to;
+/// <summary>
+/// process_nr = 
+/// 0...Reset	-- default
+/// 1...Load Settings (|| isotropic Remeshing)
+/// 2...Load Mesh File
+/// 3...extract skeleton
+/// 4...segmentation
+/// 5...slicing
+/// </summary>
+extern size_t process_nr;
+
 void Print(const std::string& text);
 void Print(const std::string& text, size_t print_to);

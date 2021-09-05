@@ -13,7 +13,6 @@
 #include "Segmentation.h"
 #include "Stitch.h"
 
-
 BEGIN_PROJECT_NAMESPACE
 
 class IglColor

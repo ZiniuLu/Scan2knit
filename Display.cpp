@@ -441,7 +441,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
             Print("\n");
             Print("[Button] Extract Skeleton");
 
-            extern size_t   process_nr;
+            //extern size_t   process_nr;
             extern Display* display;
             
             auto disp = display;
