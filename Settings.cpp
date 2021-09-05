@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <direct.h>
+//#include <direct.h>
 
 #include "project.h"
 #include "Settings.h"
