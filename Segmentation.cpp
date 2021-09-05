@@ -79,7 +79,7 @@ void Segment::set_VF_ID(
     //}
 }
 
-size_t Segment::count_V_ID(const size_t segment_id, const MAT_3i& V_ID)
+size_t Segment::count_V_ID(const size_t segment_id, MAT_3i& V_ID)
 {
     size_t count = 0;
     size_t numV = V_ID.rows();
@@ -90,7 +90,7 @@ size_t Segment::count_V_ID(const size_t segment_id, const MAT_3i& V_ID)
     }
     return count;
 }
-size_t Segment::count_F_ID(const size_t segment_id, const MAT_4i& F_ID)
+size_t Segment::count_F_ID(const size_t segment_id, MAT_4i& F_ID)
 {
     size_t count = 0;
     size_t numF = F_ID.rows();

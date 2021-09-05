@@ -75,8 +75,8 @@ public:
         MAT_3i&                       V_ID,   // V_ID.row(old_id) = <new_id...0, seg_id...1, skel_nd_id...1>     // ...1 means index starts from 1
         MAT_4i&                       F_ID);  // F_ID.row(old_id) = <ocupied 0/1, seg_id...1, seg_id...1, seg_id...1>
     
-    static size_t count_V_ID(const size_t segment_id, const MAT_3i& V_ID);
-    static size_t count_F_ID(const size_t segment_id, const MAT_4i& F_ID);
+    static size_t count_V_ID(const size_t segment_id, MAT_3i& V_ID);
+    static size_t count_F_ID(const size_t segment_id, MAT_4i& F_ID);
 
     void set_segment(
         const std::vector<SkelNode>& skel_nodes, 
