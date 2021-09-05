@@ -171,7 +171,7 @@ void    SkelGraph::set_skel_graph(const Skeleton& mcf_skel, const Polyhedron& pm
         {
             SkelExtn my_extension;
 
-            SkelNode& nd_top = this->skel_nodes[nr - 1]; // root/top node of skeleton
+            const SkelNode& nd_top = this->skel_nodes[nr - 1]; // root/top node of skeleton
             const Point* p_top;
             p_top = &(nd_top.point());
 
@@ -257,7 +257,8 @@ void    SkelGraph::set_skel_graph(const Skeleton& mcf_skel, const Polyhedron& pm
             //p_z = p_z / (zoom * 0.9) + p_top.z();
             //Print("p_x = " + p_x + "\tp_y = " + p_y + "\tp_z = " + p_z);
             
-            skel_extensions.push_back(SkelExtn(nd_top, Point(p_x, p_y, p_z)));
+            const Point p_ext = Point(p_x, p_y, p_z);
+            skel_extensions.push_back(SkelExtn(nd_top, p_ext));
         }
     };
 

@@ -201,7 +201,7 @@ private:
 
 public:
 	SkelExtn();
-	SkelExtn(SkelNode& skel_node, Point& point) :skel_node(skel_node), extn_point(point){ }
+	SkelExtn(const SkelNode& skel_node, const Point& point) :skel_node(skel_node), extn_point(point){ }
 	
 	inline const SkelNode& get_skel_node() const { return this->skel_node; }
 	inline const size_t get_skel_node_id() const { return this->skel_node.get_id(); }
