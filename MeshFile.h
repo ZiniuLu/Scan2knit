@@ -109,3 +109,8 @@ private:
 };
 
 END_PROJECT_NAMESPACE
+
+
+extern PROJECT_NAME::Mesh*	mesh;
+extern Triangle_mesh*		tmesh;
+extern Polyhedron*			pmesh;

@@ -72,3 +72,6 @@ struct Settings
 };
 
 END_PROJECT_NAMESPACE
+
+
+extern PROJECT_NAME::Settings* settings;

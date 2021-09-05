@@ -17,40 +17,29 @@
 
 using namespace PROJECT_NAME;
 
-bool            settings_loaded = false;
-bool            is_triangle_mesh = false;
-
-Display*        display = NULL;
-Settings*       settings = NULL;
-//GuiConsole*     gui_console = NULL;
-
-Mesh*           mesh = NULL;
-Triangle_mesh*  tmesh = NULL;
-Polyhedron*     pmesh = NULL;
-
-Skel*           skel = NULL;
-SkelGraph*      skel_graph = NULL;
-Segmentation*   segmentation = NULL;
-
 void init()
 {
     // declared in project.h
-    //extern size_t print_to;
-    //extern size_t process_nr;
-    //extern GuiConsole* gui_console;
-
-    // declared in 
-
     print_to     = 1;
     process_nr   = 0;
-    display      = new Display();
-    settings     = new Settings();
+    //settings_loaded  = false;
+    //is_triangle_mesh = false;
     gui_console  = new GuiConsole();
 
+    // declared in Display.h
+    display      = new Display();
+
+    // declared in Settings.h
+    settings     = new Settings();
+
+    // declared in MeshFile.h
     mesh         = new Mesh();
 
+    // declared in Skeletonization.h
     skel         = new Skel();
     skel_graph   = new SkelGraph();
+
+    // declared in Segmentation.h
     segmentation = new Segmentation();
 }
 

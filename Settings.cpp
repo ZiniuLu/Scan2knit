@@ -153,3 +153,6 @@ void Settings::print(size_t& output)
 }
 
 END_PROJECT_NAMESPACE
+
+
+PROJECT_NAME::Settings* settings = NULL;

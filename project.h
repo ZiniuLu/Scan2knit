@@ -65,6 +65,8 @@ extern size_t print_to;
 /// 5...slicing
 /// </summary>
 extern size_t process_nr;
+extern bool settings_loaded;
+extern bool is_triangle_mesh;
 extern PROJECT_NAME::GuiConsole* gui_console;
 
 void Print(const std::string& text);

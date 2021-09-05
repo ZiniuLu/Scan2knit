@@ -139,7 +139,7 @@ void GuiDisplay::Draw(const char* title, bool* p_open)
                     }
                     }
 
-                    extern Display* display;
+                    //extern Display* display;
                     display->update();
                 }
             }
@@ -152,7 +152,7 @@ void GuiDisplay::Draw(const char* title, bool* p_open)
     // Set Parameter
     if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        extern Settings* settings;
+        //extern Settings* settings;
 
         // Select rotation type
         int active_geo = 0;
@@ -190,17 +190,17 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
     if (ImGui::Button("Reset            ", ImVec2(-1, 0)))
     {
-        //extern size_t   process_nr;
-        extern bool     settings_loaded;
-        extern bool     is_triangle_mesh;
+        //extern size_t         process_nr;
+        //extern bool           settings_loaded;
+        //extern bool           is_triangle_mesh;
 
-        extern Settings* settings;
-        //extern GuiConsole* gui_console;
+        //extern Settings*      settings;
+        //extern GuiConsole*    gui_console;
 
-        extern Mesh* mesh;
-        extern Triangle_mesh* tmesh;
-        extern Skel* skel;
-        extern SkelGraph* skel_graph;
+        //extern Mesh*          mesh;
+        //extern Triangle_mesh* tmesh;
+        //extern Skel*          skel;
+        //extern SkelGraph*     skel_graph;
 
         delete settings;
         delete gui_console;
@@ -220,7 +220,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
         skel = new Skel();
         skel_graph = new SkelGraph();
 
-        extern Display* display;
+        //extern Display* display;
         display->erase(process_nr);
         Print("All caches have been cleared.\n");
     }
@@ -234,11 +234,11 @@ void GuiControl::Draw(const char* title, bool* p_open)
         {
             Print("[Button] Load Settings");
 
-            extern Settings* settings;
+            //extern Settings* settings;
 
             //extern size_t print_to;
             //extern size_t process_nr;
-            extern bool   settings_loaded;
+            //extern bool   settings_loaded;
 
             if (process_nr == 0 && !settings_loaded)
             {
@@ -281,10 +281,10 @@ void GuiControl::Draw(const char* title, bool* p_open)
             }
             else if(process_nr == 1)
             {
-                extern bool settings_loaded;
+                //extern bool settings_loaded;
                 if (settings_loaded)
                 {
-                    extern Settings* settings;  
+                    //extern Settings* settings;  
                     std::ostringstream t1;
                     t1 << "\tRemeshing " << settings->Remeshing.remeshing_out_suffix << " ...";
                     Print(t1.str());
@@ -312,9 +312,9 @@ void GuiControl::Draw(const char* title, bool* p_open)
             }
             else if (process_nr == 2)
             {
-                extern Mesh* mesh;
-                extern Display* display;
-                extern Settings* settings;
+                //extern Mesh* mesh;
+                //extern Display* display;
+                //extern Settings* settings;
 
                 // reset loaded mesh -- similar to Reset
                 Print("\tRemoving current loaded mesh.\n");
@@ -358,10 +358,10 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
                 if (mesh->is_triangle_mesh())
                 {
-                    extern bool is_triangle_mesh;
+                    //extern bool is_triangle_mesh;
                     //extern Triangle_mesh* tmesh; 
-                    extern Polyhedron* pmesh;
-                    extern Display* display;
+                    //extern Polyhedron* pmesh;
+                    //extern Display* display;
 
                     is_triangle_mesh = true;
                     process_nr = 2;
@@ -382,11 +382,11 @@ void GuiControl::Draw(const char* title, bool* p_open)
             Print("\n");
             Print("[Button] Load Mesh File");
 
-            extern bool settings_loaded;
+            //extern bool settings_loaded;
             //extern size_t process_nr;
 
-            extern Settings* settings;
-            extern Mesh* mesh;
+            //extern Settings* settings;
+            //extern Mesh* mesh;
 
             if (process_nr == 0)
             {
@@ -411,10 +411,10 @@ void GuiControl::Draw(const char* title, bool* p_open)
 
                     if (mesh->is_triangle_mesh())
                     {
-                        extern bool is_triangle_mesh;
+                        //extern bool is_triangle_mesh;
                         //extern Triangle_mesh* tmesh; 
-                        extern Polyhedron* pmesh; 
-                        extern Display* display;
+                        //extern Polyhedron* pmesh; 
+                        //extern Display* display;
 
                         is_triangle_mesh = true;
                         process_nr = 2;
@@ -442,16 +442,16 @@ void GuiControl::Draw(const char* title, bool* p_open)
             Print("[Button] Extract Skeleton");
 
             //extern size_t   process_nr;
-            extern Display* display;
+            //extern Display* display;
             
             auto disp = display;
             size_t& pro_nr = process_nr;
             auto ins_skels = [disp, &pro_nr]()
             {
-                extern Settings* settings;
-                extern Mesh* mesh;
-                extern Skel* skel;
-                extern SkelGraph* skel_graph;
+                //extern Settings* settings;
+                //extern Mesh* mesh;
+                //extern Skel* skel;
+                //extern SkelGraph* skel_graph;
 
                 skel->extract_to_end(*mesh);
 
@@ -503,15 +503,15 @@ void GuiControl::Draw(const char* title, bool* p_open)
             Print("[Button] Extract Segments");
 
             //extern size_t process_nr;
-            extern Display* display;
+            //extern Display* display;
 
             auto ins_segs = []()
             {
-                extern Settings*     settings;
+                //extern Settings*     settings;
                 //extern Skel*         skel;
-                extern Polyhedron*   pmesh;
-                extern SkelGraph*    skel_graph;
-                extern Segmentation* segmentation;
+                //extern Polyhedron*   pmesh;
+                //extern SkelGraph*    skel_graph;
+                //extern Segmentation* segmentation;
 
                 //Skeleton& skeleton = skel->get_skeleton();
                 //std::string path = settings->root_path + settings->File.folder_path + settings->File.name;
@@ -598,7 +598,7 @@ void GuiControl::Draw(const char* title, bool* p_open)
     // Set Parameter
     if (ImGui::CollapsingHeader("Parameter", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        extern Settings* settings;
+        //extern Settings* settings;
         // set para
         ImGui::PushItemWidth(60);
         ImGui::InputDouble("stitch_width ", &(settings->Stitch.stitch_width), 0, 0, "%.3f", 0);
@@ -1297,7 +1297,7 @@ void Display::insert_stitches(Stitches& stitches, size_t pos, size_t len)
 
 void Display::set_parameter(const std::string& geom_name)
 {
-    extern Settings* settings;
+    //extern Settings* settings;
 
     if (geom_name == "mesh")
     {
@@ -1398,3 +1398,6 @@ bool Display::key_down(IGL_Viewer& viewer, unsigned char key, int modifier)
 }
 
 END_PROJECT_NAMESPACE
+
+
+PROJECT_NAME::Display* display = NULL;

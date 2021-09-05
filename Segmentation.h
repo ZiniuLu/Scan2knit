@@ -179,3 +179,6 @@ public:
 //};
 
 END_PROJECT_NAMESPACE
+
+
+extern PROJECT_NAME::Segmentation* segmentation;

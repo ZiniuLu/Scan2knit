@@ -381,3 +381,7 @@ inline bool larger_than_2(size_t num) { return num > 2; }
 bool sort_chain_increase(const SkelChain& chain1, const SkelChain& chain2);
 
 END_PROJECT_NAMESPACE
+
+
+extern PROJECT_NAME::Skel*			skel;
+extern PROJECT_NAME::SkelGraph*		skel_graph;

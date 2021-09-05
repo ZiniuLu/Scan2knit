@@ -386,3 +386,6 @@ public:
 };
 
 END_PROJECT_NAMESPACE
+
+
+extern PROJECT_NAME::Display* display;

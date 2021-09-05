@@ -172,3 +172,8 @@ bool Mesh::load_off(MeshFile& meshFile)
 }
 
 END_PROJECT_NAMESPACE
+
+
+PROJECT_NAME::Mesh* mesh = NULL; 
+Triangle_mesh*		tmesh = NULL;
+Polyhedron*			pmesh = NULL;

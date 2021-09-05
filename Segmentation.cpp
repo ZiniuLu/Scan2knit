@@ -753,3 +753,6 @@ void Segmentation::set_constraints(Settings& settings)
 //}
 
 END_PROJECT_NAMESPACE
+
+
+PROJECT_NAME::Segmentation* segmentation = NULL;

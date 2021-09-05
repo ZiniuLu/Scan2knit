@@ -980,3 +980,7 @@ bool    sort_chain_increase(const SkelChain& chain1, const SkelChain& chain2)
 }
 
 END_PROJECT_NAMESPACE
+
+
+PROJECT_NAME::Skel*         skel = NULL;
+PROJECT_NAME::SkelGraph*    skel_graph = NULL;

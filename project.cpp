@@ -385,11 +385,13 @@ END_PROJECT_NAMESPACE
 
 size_t print_to = 1;
 size_t process_nr = 0;
+bool settings_loaded = false;
+bool is_triangle_mesh = false;
 PROJECT_NAME::GuiConsole* gui_console = NULL;
 
 void Print(const std::string& text)
 {
-    extern size_t print_to;
+    //extern size_t print_to;
     Print(text, print_to);
 }
 void Print(const std::string& text, size_t print_to)
