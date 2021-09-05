@@ -223,7 +223,7 @@ private:
 	IGL_Gui    gui;
 	Bound	   bound; // xyz-size of geometry; max of all bounding boxes
 
-	inline void insert_geometry(IglGeometry& geometry) { this->igl_geoms.push_back(geometry); }
+	inline void insert_geometry(const IglGeometry& geometry) { this->igl_geoms.push_back(geometry); }
 
 	void insert_obj(std::string path);
 	void insert_off(std::string path);
