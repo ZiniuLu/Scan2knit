@@ -147,7 +147,7 @@ void Segment::set_segment(
     for (size_t j = 0; j < F.rows(); j++)
     {
         const auto& f = F.row(j);
-        auto& f_id    = F_ID.row(j);
+        auto f_id     = F_ID.row(j);
         if (f_id(0) == 0 && f_id(1) == this->id && f_id(2) == this->id && f_id(3) == this->id)
         {
             size_t f1 = V_ID.row(f(0))(0); // new id of vertex
@@ -156,6 +156,7 @@ void Segment::set_segment(
             
             this->F.row(f_id_new) << f1, f2, f3;
             f_id(0) = 1; // to mark current face has been ocupied
+            F_ID.row(j) << f_id;
             f_id_new++;
         }
     }
@@ -164,7 +165,7 @@ void Segment::set_segment(
     for (size_t j = 0; j < F.rows(); j++)
     {
         const auto& f = F.row(j);
-        auto& f_id = F_ID.row(j);
+        auto f_id = F_ID.row(j);
         if (f_id(0) == 1) continue;
     
         bool cond1 = f_id(1) == this->id && f_id(2) == this->id && f_id(3) != this->id;
@@ -179,7 +180,7 @@ void Segment::set_segment(
             else if (cond3) f_i = 2;
     
             size_t v_i = F.row(j)(f_i); // index of V list
-            auto& v_id = V_ID.row(v_i);
+            auto v_id = V_ID.row(v_i);
     
             if (this->V.rows() <= v_id_new)
             {
@@ -189,6 +190,7 @@ void Segment::set_segment(
             this->V.row(v_id_new) << V.row(v_i);
             v_id(0) = v_id_new;
             v_id(1) = this->id;
+            V_ID.row(v_i) << v_id;
     
             size_t f1, f2, f3;
             if (cond1)
@@ -217,6 +219,7 @@ void Segment::set_segment(
     
             this->F.row(f_id_new) << f1, f2, f3;
             f_id(0) = 1;
+            F_ID.row(j) << f_id;
             v_id_new++;
             f_id_new++;
         }
